@@ -1,12 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark" class="dark" style="background-color: #000000; color: #ffffff;">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/logo_clean_pure_white.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>Airways</title>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('airline-theme');
+          var theme = saved === 'light' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', theme);
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.backgroundColor = '#000000';
+            document.documentElement.style.color = '#ffffff';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.backgroundColor = '#fbfbfd';
+            document.documentElement.style.color = '#000000';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=block">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=block">
   </head>
-  <body>
+  <body class="antialiased font-sans" style="background-color: inherit; color: inherit;">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
