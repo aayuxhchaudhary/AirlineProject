@@ -1,4 +1,4 @@
-import { Clock, MapPin, Tag, Hash, Users, Activity, X } from 'lucide-react';
+import { MapPin, Tag, Hash, Users, Activity, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AscendingPlaneIcon } from './AscendingPlaneIcon';
 
@@ -25,15 +25,20 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
     switch (s) {
       case 'SCHEDULED':
       case 'ON TIME':
-        return 'text-emerald-500';
+        return 'text-[var(--status-success)]';
       case 'DELAYED':
-        return 'text-amber-500';
+        return 'text-[var(--status-warning)]';
       case 'CANCELLED':
-        return 'text-rose-500';
+        return 'text-[var(--status-danger)]';
       default:
         return 'text-[var(--text-sub)]';
     }
   };
+
+  const formattedPrice = Number(flight.ticketPrice || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 
   return (
     <AnimatePresence>
@@ -43,9 +48,9 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.1 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
           />
 
           <motion.div
@@ -59,6 +64,7 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 text-[var(--text-dim)] hover:text-[var(--text-main)] p-2 rounded-xl hover:bg-[var(--bg-card)]"
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -123,7 +129,7 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
                   <p className="text-[10px] font-mono text-[var(--text-dim)] uppercase tracking-wider mb-1 flex items-center gap-1">
                     <Tag className="w-3 h-3" /> Price
                   </p>
-                  <p className="text-sm font-bold font-mono text-[var(--text-main)]">₹{flight.ticketPrice}</p>
+                  <p className="text-sm font-bold font-mono text-[var(--text-main)]">₹{formattedPrice}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-mono text-[var(--text-dim)] uppercase tracking-wider mb-1 flex items-center gap-1">
@@ -147,14 +153,12 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
                   </span>
                 </div>
                 <div className="w-full bg-[var(--bg-pill)] rounded-full h-2 overflow-hidden border border-[var(--border-subtle)]">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, Math.max(0, seatRatio))}%` }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className={`h-full rounded-full ${isFull ? 'bg-rose-500' : 'bg-[var(--text-main)]'}`}
-                  ></motion.div>
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${isFull ? 'bg-[var(--status-danger)]' : 'bg-[var(--text-main)]'}`}
+                    style={{ width: `${Math.min(100, Math.max(0, seatRatio))}%` }}
+                  ></div>
                 </div>
-                {isFull && <p className="text-xs text-rose-500 mt-2 font-semibold">Flight is fully booked</p>}
+                {isFull && <p className="text-xs text-[var(--status-danger)] mt-2 font-semibold">Flight is fully booked</p>}
               </div>
             </div>
 

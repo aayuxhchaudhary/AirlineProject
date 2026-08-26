@@ -26,13 +26,18 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
       case 'ON TIME':
         return 'bg-[var(--btn-main-bg)] text-[var(--btn-main-text)] font-semibold';
       case 'DELAYED':
-        return 'bg-amber-500/10 text-amber-500 border border-amber-500/20 font-semibold';
+        return 'bg-[var(--status-warning-bg)] text-[var(--status-warning)] font-semibold';
       case 'CANCELLED':
-        return 'bg-red-500/10 text-red-500 border border-red-500/20 font-semibold';
+        return 'bg-[var(--status-danger-bg)] text-[var(--status-danger)] font-semibold';
       default:
         return 'bg-[var(--bg-pill)] text-[var(--text-sub)] border border-[var(--border-subtle)]';
     }
   };
+
+  const formattedPrice = Number(flight.ticketPrice || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 
   return (
     <div className="apple-card p-6 flex flex-col justify-between transition-colors duration-200 relative group border border-[var(--border-subtle)] hover:border-[var(--border-hover)]">
@@ -111,7 +116,7 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
       <div className="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between gap-3">
         <div>
           <span className="text-[9px] font-mono text-[var(--text-dim)] block uppercase tracking-wider">FARE / SEAT</span>
-          <span className="text-xl font-bold font-display text-[var(--text-main)]">₹{flight.ticketPrice}</span>
+          <span className="text-xl font-bold font-display text-[var(--text-main)]">₹{formattedPrice}</span>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -128,14 +133,14 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
               <button
                 onClick={() => onEdit(flight)}
                 className="apple-btn-secondary p-2 text-xs hover:border-[var(--border-hover)]"
-                title="Edit Flight"
+                aria-label="Edit flight"
               >
                 <Edit className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(flight)}
-                className="apple-btn-secondary p-2 text-xs text-red-500 hover:border-red-500/30 hover:bg-red-500/10"
-                title="Delete Flight"
+                className="apple-btn-secondary p-2 text-xs text-[var(--status-danger)] hover:border-[var(--status-danger)]/30 hover:bg-[var(--status-danger-bg)]"
+                aria-label="Delete flight"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>

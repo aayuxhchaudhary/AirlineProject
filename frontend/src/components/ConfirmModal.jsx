@@ -10,9 +10,9 @@ export const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, conf
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.1 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             onClick={onCancel}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
           />
 
           <motion.div
@@ -25,6 +25,7 @@ export const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, conf
             <button
               onClick={onCancel}
               className="absolute top-4 right-4 text-[var(--text-dim)] hover:text-[var(--text-main)] p-2 rounded-xl hover:bg-[var(--bg-pill)]"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>

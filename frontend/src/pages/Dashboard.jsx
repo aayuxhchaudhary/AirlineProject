@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Search, RefreshCw, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, Loader2, LayoutList, LayoutGrid } from 'lucide-react';
 import { FlightCard } from '../components/FlightCard';
+import { FlightRow } from '../components/FlightRow';
 import { FlightDetailsModal } from '../components/FlightDetailsModal';
 import { FlightFormModal } from '../components/FlightFormModal';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -18,6 +19,7 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
   const [source, setSource] = useState('');
   const [destination, setDestination] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [viewMode, setViewMode] = useState('list');
 
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -160,22 +162,85 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
     }
   };
 
+  const handleViewDetails = (f) => {
+    setSelectedFlight(f);
+    setIsDetailsOpen(true);
+  };
+
+  const handleEdit = (f) => {
+    setEditFlightData(f);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleDelete = (f) => {
+    setDeleteTarget(f);
+    setIsDeleteModalOpen(true);
+  };
+
+  const renderFlightList = () => (
+    <div className="flex flex-col gap-3.5">
+      {flights.map((flight) => (
+        <FlightRow
+          key={flight.id}
+          flight={flight}
+          onViewDetails={handleViewDetails}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      ))}
+    </div>
+  );
+
+  const renderFlightGrid = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {flights.map((flight) => (
+        <FlightCard
+          key={flight.id}
+          flight={flight}
+          onViewDetails={handleViewDetails}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      ))}
+    </div>
+  );
+
+  const renderContent = () => {
+    if (initialLoading) {
+      return <LoadingSkeleton count={6} viewMode={viewMode} />;
+    }
+
+    if (flights.length === 0) {
+      return (
+        <div className="w-full flex justify-center py-8">
+          <EmptyState
+            message={isSearching ? `No flights found matching route "${source}" to "${destination}".` : "No flights registered in system database."}
+            onReset={isSearching ? handleResetSearch : undefined}
+          />
+        </div>
+      );
+    }
+
+    return viewMode === 'list' ? renderFlightList() : renderFlightGrid();
+  };
+
   return (
-    <div className="min-h-[calc(100vh-64px)] pb-20 bg-[var(--bg-app)] text-[var(--text-main)] relative">
+    <div className="min-h-[calc(100vh-4rem)] pb-20 bg-[var(--bg-app)] text-[var(--text-main)]">
       <section className="pt-10 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-30">
-        <div className="apple-glass p-6 sm:p-8 relative z-30">
+        <div className="apple-glass p-6 sm:p-8">
           <div className="mb-6 pb-6 border-b border-[var(--border-subtle)]">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-main)] tracking-tight uppercase font-display">
-              EXPLORE FLIGHT SCHEDULES
+              Explore Flight Schedules
             </h1>
           </div>
 
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
-                SOURCE CITY
+              <label htmlFor="source-city" className="block text-[10px] font-mono font-semibold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
+                Source City
               </label>
               <CityAutocomplete
+                id="source-city"
                 name="source"
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
@@ -183,10 +248,11 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
             </div>
 
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
-                DESTINATION CITY
+              <label htmlFor="destination-city" className="block text-[10px] font-mono font-semibold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
+                Destination City
               </label>
               <CityAutocomplete
+                id="destination-city"
                 name="destination"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
@@ -197,12 +263,12 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
               <button
                 type="submit"
                 disabled={searchLoading}
-                className="apple-btn-primary flex-1 py-3 px-5 text-xs flex items-center justify-center space-x-2 shadow-md uppercase tracking-wider disabled:opacity-50"
+                className="apple-btn-primary flex-1 py-3 px-5 text-xs uppercase tracking-wider disabled:opacity-50"
               >
                 {searchLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Searching...</span>
+                    <span>Searching…</span>
                   </>
                 ) : (
                   <>
@@ -217,8 +283,8 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
                   type="button"
                   onClick={handleResetSearch}
                   disabled={searchLoading}
-                  className="apple-btn-secondary p-3 text-[var(--text-sub)] hover:text-[var(--text-main)] disabled:opacity-50"
-                  title="Reset Search"
+                  className="apple-btn-icon p-3 border border-[var(--border-subtle)] rounded-[var(--radius-md)] disabled:opacity-50"
+                  aria-label="Reset search filters"
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
@@ -232,45 +298,46 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
         <div className="flex items-center justify-between mb-6 pb-3 border-b border-[var(--border-subtle)]">
           <div className="flex items-center space-x-3">
             <h2 className="text-xs font-bold text-[var(--text-main)] tracking-widest uppercase font-display">
-              AVAILABLE SCHEDULES
+              Available Schedules
             </h2>
             <span className="px-2.5 py-0.5 rounded-full bg-[var(--bg-pill)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-sub)]">
-              {flights.length}
+              {initialLoading ? '—' : flights.length}
             </span>
+          </div>
+
+          <div className="flex items-center p-1 rounded-xl bg-[var(--bg-pill)] border border-[var(--border-subtle)] space-x-1">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              aria-label="List view"
+              aria-pressed={viewMode === 'list'}
+              className={`p-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-[var(--bg-card-solid)] text-[var(--text-main)] shadow-sm font-semibold'
+                  : 'text-[var(--text-dim)] hover:text-[var(--text-main)]'
+              }`}
+            >
+              <LayoutList className="w-4 h-4" />
+              <span className="text-[10px] font-mono uppercase tracking-wider hidden sm:inline">List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
+              aria-pressed={viewMode === 'grid'}
+              className={`p-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-[var(--bg-card-solid)] text-[var(--text-main)] shadow-sm font-semibold'
+                  : 'text-[var(--text-dim)] hover:text-[var(--text-main)]'
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="text-[10px] font-mono uppercase tracking-wider hidden sm:inline">Grid</span>
+            </button>
           </div>
         </div>
 
-        {initialLoading ? (
-          <LoadingSkeleton count={6} />
-        ) : flights.length === 0 ? (
-          <div className="w-full flex justify-center py-8">
-            <EmptyState
-              message={isSearching ? `No flights found matching route "${source}" to "${destination}".` : "No flights registered in system database."}
-              onReset={isSearching ? handleResetSearch : undefined}
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-200">
-            {flights.map((flight) => (
-              <FlightCard
-                key={flight.id}
-                flight={flight}
-                onViewDetails={(f) => {
-                  setSelectedFlight(f);
-                  setIsDetailsOpen(true);
-                }}
-                onEdit={(f) => {
-                  setEditFlightData(f);
-                  setIsCreateModalOpen(true);
-                }}
-                onDelete={(f) => {
-                  setDeleteTarget(f);
-                  setIsDeleteModalOpen(true);
-                }}
-              />
-            ))}
-          </div>
-        )}
+        {renderContent()}
       </main>
 
       <FlightDetailsModal

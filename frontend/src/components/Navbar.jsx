@@ -22,8 +22,8 @@ export const Navbar = ({ onOpenCreateModal, onOpenLoginModal }) => {
         <div className="flex items-center space-x-3">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl text-[var(--text-main)] hover:bg-[var(--bg-pill)] transition-colors"
-            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+            className="apple-btn-icon"
+            aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
           >
             {theme === 'dark' ? (
               <Sun className="w-4.5 h-4.5 text-[var(--text-main)]" />
@@ -47,8 +47,8 @@ export const Navbar = ({ onOpenCreateModal, onOpenLoginModal }) => {
                   logoutAdmin();
                   navigate('/');
                 }}
-                className="p-2 rounded-xl text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-pill)] transition-colors"
-                title="Logout"
+                className="apple-btn-icon"
+                aria-label="Logout"
               >
                 <LogOut className="w-4 h-4" />
               </button>

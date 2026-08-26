@@ -7,6 +7,7 @@ import com.airline.repository.FlightRepository;
 import com.airline.service.FlightService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +36,7 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
+    @Transactional
     public Flight createFlight(Flight flight) {
         if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
             throw new BadRequestException("Flight with flight number " + flight.getFlightNumber() + " already exists.");
@@ -44,6 +46,7 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Flight> getAllFlights() {
         return flightRepository.findAll();
     }
@@ -55,6 +58,7 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
+    @Transactional
     public Flight updateFlight(Long id, Flight flightDetails) {
         Flight flight = getFlightById(id);
 
@@ -80,12 +84,14 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
+    @Transactional
     public void deleteFlight(Long id) {
         Flight flight = getFlightById(id);
         flightRepository.delete(flight);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Flight> searchFlights(String source, String destination) {
         boolean hasSource = source != null && !source.trim().isEmpty();
         boolean hasDest = destination != null && !destination.trim().isEmpty();

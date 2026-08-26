@@ -41,7 +41,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
         arrivalTime: initialData.arrivalTime ? initialData.arrivalTime.slice(0, 16) : '',
         totalSeats: initialData.totalSeats || 180,
         availableSeats: initialData.availableSeats || 180,
-        ticketPrice: initialData.ticketPrice || 4500,
+        ticketPrice: initialData.ticketPrice ? Number(initialData.ticketPrice) : 4500,
         status: initialData.status || 'SCHEDULED'
       });
     } else {
@@ -124,21 +124,22 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
           />
 
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             className="apple-card w-full max-w-xl rounded-3xl p-6 shadow-2xl relative z-10 my-8"
           >
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-[var(--text-dim)] hover:text-[var(--text-main)] p-2 rounded-xl hover:bg-[var(--bg-pill)]"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
@@ -158,7 +159,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
             </div>
 
             {formError && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-xs font-semibold text-red-500">
+              <div className="mb-4 p-3 bg-[var(--status-danger-bg)] border border-[var(--status-danger)]/30 rounded-xl text-xs font-semibold text-[var(--status-danger)]">
                 {formError}
               </div>
             )}
@@ -166,10 +167,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="flightNumber" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Flight Number *
                   </label>
                   <input
+                    id="flightNumber"
                     type="text"
                     name="flightNumber"
                     required
@@ -180,10 +182,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="airlineName" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Airline Name *
                   </label>
                   <input
+                    id="airlineName"
                     type="text"
                     name="airlineName"
                     required
@@ -194,10 +197,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="source" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Source *
                   </label>
                   <CityAutocomplete
+                    id="source"
                     name="source"
                     value={formData.source}
                     onChange={handleChange}
@@ -205,10 +209,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="destination" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Destination *
                   </label>
                   <CityAutocomplete
+                    id="destination"
                     name="destination"
                     value={formData.destination}
                     onChange={handleChange}
@@ -216,10 +221,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="departureTime" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Departure Time *
                   </label>
                   <input
+                    id="departureTime"
                     type="datetime-local"
                     name="departureTime"
                     min={nowString}
@@ -231,10 +237,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="arrivalTime" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Arrival Time *
                   </label>
                   <input
+                    id="arrivalTime"
                     type="datetime-local"
                     name="arrivalTime"
                     min={formData.departureTime || nowString}
@@ -246,10 +253,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="totalSeats" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Total Seats *
                   </label>
                   <input
+                    id="totalSeats"
                     type="number"
                     name="totalSeats"
                     min="1"
@@ -261,10 +269,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="availableSeats" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Available Seats *
                   </label>
                   <input
+                    id="availableSeats"
                     type="number"
                     name="availableSeats"
                     min="0"
@@ -277,10 +286,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="ticketPrice" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Ticket Price (₹) *
                   </label>
                   <input
+                    id="ticketPrice"
                     type="number"
                     step="0.01"
                     name="ticketPrice"
@@ -293,10 +303,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
+                  <label htmlFor="status" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
                     Status *
                   </label>
                   <CustomSelect
+                    id="status"
                     name="status"
                     value={formData.status}
                     options={statusOptions}

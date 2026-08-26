@@ -44,21 +44,22 @@ export const AdminLoginModal = ({ isOpen, onClose, onShowToast }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
           />
 
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             className="apple-card w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10"
           >
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-[var(--text-dim)] hover:text-[var(--text-main)] p-2 rounded-xl hover:bg-[var(--bg-pill)]"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
@@ -72,7 +73,7 @@ export const AdminLoginModal = ({ isOpen, onClose, onShowToast }) => {
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start space-x-2 text-red-500">
+              <div className="mb-4 p-3 bg-[var(--status-danger-bg)] border border-[var(--status-danger)]/30 rounded-xl flex items-start space-x-2 text-[var(--status-danger)]">
                 <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                 <p className="text-xs font-semibold">{error}</p>
               </div>
@@ -80,10 +81,11 @@ export const AdminLoginModal = ({ isOpen, onClose, onShowToast }) => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
+                <label htmlFor="admin-email" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
                   Email / Username
                 </label>
                 <input
+                  id="admin-email"
                   type="text"
                   required
                   value={credentials.username}
@@ -93,10 +95,11 @@ export const AdminLoginModal = ({ isOpen, onClose, onShowToast }) => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
+                <label htmlFor="admin-password" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest mb-1.5">
                   Password
                 </label>
                 <input
+                  id="admin-password"
                   type="password"
                   required
                   value={credentials.password}

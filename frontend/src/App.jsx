@@ -22,7 +22,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col font-sans transition-colors">
+          <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans transition-colors">
             <Navbar
               onOpenCreateModal={() => setIsCreateModalOpen(true)}
               onOpenLoginModal={() => setIsLoginModalOpen(true)}
