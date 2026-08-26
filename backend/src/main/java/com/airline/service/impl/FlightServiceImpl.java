@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import java.util.Optional;
 
 @Service
@@ -47,8 +50,9 @@ public class FlightServiceImpl implements FlightService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Flight> getAllFlights() {
-        return flightRepository.findAll();
+    public Page<Flight> getAllFlights(int page, int size, String sortBy, String direction) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sortBy));
+        return flightRepository.findAll(pageable);
     }
 
     @Override
@@ -92,18 +96,19 @@ public class FlightServiceImpl implements FlightService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Flight> searchFlights(String source, String destination) {
+    public Page<Flight> searchFlights(String source, String destination, int page, int size, String sortBy, String direction) {
         boolean hasSource = source != null && !source.trim().isEmpty();
         boolean hasDest = destination != null && !destination.trim().isEmpty();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sortBy));
 
         if (hasSource && hasDest) {
-            return flightRepository.findBySourceIgnoreCaseContainingAndDestinationIgnoreCaseContaining(source.trim(), destination.trim());
+            return flightRepository.findBySourceIgnoreCaseContainingAndDestinationIgnoreCaseContaining(source.trim(), destination.trim(), pageable);
         } else if (hasSource) {
-            return flightRepository.findBySourceIgnoreCaseContaining(source.trim());
+            return flightRepository.findBySourceIgnoreCaseContaining(source.trim(), pageable);
         } else if (hasDest) {
-            return flightRepository.findByDestinationIgnoreCaseContaining(destination.trim());
+            return flightRepository.findByDestinationIgnoreCaseContaining(destination.trim(), pageable);
         } else {
-            return flightRepository.findAll();
+            return flightRepository.findAll(pageable);
         }
     }
 

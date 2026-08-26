@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export const CustomSelect = ({ value, onChange, options, name, id }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,16 +62,12 @@ export const CustomSelect = ({ value, onChange, options, name, id }) => {
         <ChevronDown className={`w-4 h-4 text-[var(--text-dim)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      <AnimatePresence>
+      <>
         {isOpen && (
-          <motion.ul
+          <ul
             id={listId}
             role="listbox"
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 4, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
-            className="absolute left-0 right-0 z-50 p-1 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-56 overflow-y-auto"
+            className="animate-dropdown absolute left-0 right-0 z-50 p-1 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-56 overflow-y-auto mt-1"
           >
             {options.map((opt, index) => {
               const isSelected = opt.value === value;
@@ -100,9 +95,9 @@ export const CustomSelect = ({ value, onChange, options, name, id }) => {
                 </li>
               );
             })}
-          </motion.ul>
+          </ul>
         )}
-      </AnimatePresence>
+      </>
     </div>
   );
 };

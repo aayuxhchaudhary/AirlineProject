@@ -57,11 +57,25 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
         </div>
 
         <div className="my-5 py-2">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1.5 max-w-[40%]">
-              <p className="text-2xl font-bold font-display tracking-tight text-[var(--text-main)] truncate">
+          <div className="flex flex-col w-full">
+            <div className="flex items-center justify-between w-full">
+              <p className="text-2xl font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%]">
                 {flight.source}
               </p>
+
+              <div className="flex-1 px-3 max-w-[100px]">
+                <div className="w-full flex items-center justify-center relative">
+                  <div className="w-full border-t border-dashed border-[var(--border-hover)]"></div>
+                  <AscendingPlaneIcon className="h-5 w-auto text-[var(--text-main)] absolute z-10 px-1.5 bg-[var(--bg-card-solid)]" />
+                </div>
+              </div>
+
+              <p className="text-2xl font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%] text-right">
+                {flight.destination}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between mt-1 w-full">
               <div className="space-y-0.5">
                 <p className="text-xs font-mono font-semibold text-[var(--text-sub)] flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5 text-[var(--text-dim)] shrink-0" />
@@ -69,20 +83,8 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
                 </p>
                 <p className="text-[10px] font-mono text-[var(--text-dim)] pl-4.5">{dep.date}</p>
               </div>
-            </div>
 
-            <div className="flex flex-col items-center px-2 flex-1">
-              <div className="w-full max-w-[100px] flex items-center justify-center relative my-2">
-                <div className="w-full border-t border-dashed border-[var(--border-hover)]"></div>
-                <AscendingPlaneIcon className="h-5 w-auto text-[var(--text-main)] absolute z-10 px-1.5 bg-[var(--bg-card-solid)]" />
-              </div>
-            </div>
-
-            <div className="space-y-1.5 text-right max-w-[40%]">
-              <p className="text-2xl font-bold font-display tracking-tight text-[var(--text-main)] truncate">
-                {flight.destination}
-              </p>
-              <div className="space-y-0.5">
+              <div className="space-y-0.5 text-right">
                 <p className="text-xs font-mono font-semibold text-[var(--text-sub)] flex items-center justify-end gap-1">
                   <span>{arr.time}</span>
                   <Clock className="w-3.5 h-3.5 text-[var(--text-dim)] shrink-0" />

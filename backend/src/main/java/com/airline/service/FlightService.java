@@ -2,13 +2,13 @@ package com.airline.service;
 
 import com.airline.entity.Flight;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface FlightService {
 
     Flight createFlight(Flight flight);
 
-    List<Flight> getAllFlights();
+    Page<Flight> getAllFlights(int page, int size, String sortBy, String direction);
 
     Flight getFlightById(Long id);
 
@@ -16,7 +16,7 @@ public interface FlightService {
 
     void deleteFlight(Long id);
 
-    List<Flight> searchFlights(String source, String destination);
+    Page<Flight> searchFlights(String source, String destination, int page, int size, String sortBy, String direction);
 
     String getFlightStatus(Long id);
 }

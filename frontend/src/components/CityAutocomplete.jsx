@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const POPULAR_CITIES = [
   'Delhi',
@@ -118,17 +117,13 @@ export const CityAutocomplete = ({ value = '', onChange, name, id, className = '
         )}
       </div>
 
-      <AnimatePresence>
+      <>
         {isOpen && filteredCities.length > 0 && (
-          <motion.ul
+          <ul
             ref={listRef}
             id={listId}
             role="listbox"
-            initial={{ opacity: 0, y: 4, scale: 0.98 }}
-            animate={{ opacity: 1, y: 6, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.98 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
-            className="absolute left-0 right-0 z-[100] p-1.5 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-48 overflow-y-auto"
+            className="animate-dropdown absolute left-0 right-0 z-[100] p-1.5 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-48 overflow-y-auto mt-2"
           >
             {filteredCities.map((city, index) => (
               <li
@@ -148,9 +143,9 @@ export const CityAutocomplete = ({ value = '', onChange, name, id, className = '
                 <span>{city}</span>
               </li>
             ))}
-          </motion.ul>
+          </ul>
         )}
-      </AnimatePresence>
+      </>
     </div>
   );
 };

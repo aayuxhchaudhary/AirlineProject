@@ -1,5 +1,4 @@
 import { MapPin, Tag, Hash, Users, Activity, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { AscendingPlaneIcon } from './AscendingPlaneIcon';
 
 export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
@@ -41,24 +40,16 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
   });
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
+          <div
             onClick={onClose}
-            className="fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
+            className="animate-fade fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
           />
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 6 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
-            className="apple-card w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 my-8 overflow-hidden"
+          <div
+            className="animate-modal apple-card w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 my-8 overflow-hidden"
           >
             <div className="bg-[var(--bg-pill)] border-b border-[var(--border-subtle)] p-6">
               <button
@@ -170,9 +161,9 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
                 Close Details
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };

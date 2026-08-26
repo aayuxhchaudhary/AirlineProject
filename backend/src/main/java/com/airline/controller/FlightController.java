@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 import java.util.Map;
 
 @RestController
@@ -31,8 +31,12 @@ public class FlightController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Flight>> getAllFlights() {
-        List<Flight> flights = flightService.getAllFlights();
+    public ResponseEntity<Page<Flight>> getAllFlights(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        Page<Flight> flights = flightService.getAllFlights(page, size, sortBy, direction);
         return ResponseEntity.ok(flights);
     }
 
@@ -57,10 +61,14 @@ public class FlightController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Flight>> searchFlights(
+    public ResponseEntity<Page<Flight>> searchFlights(
             @RequestParam(required = false, defaultValue = "") String source,
-            @RequestParam(required = false, defaultValue = "") String destination) {
-        List<Flight> flights = flightService.searchFlights(source, destination);
+            @RequestParam(required = false, defaultValue = "") String destination,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        Page<Flight> flights = flightService.searchFlights(source, destination, page, size, sortBy, direction);
         return ResponseEntity.ok(flights);
     }
 

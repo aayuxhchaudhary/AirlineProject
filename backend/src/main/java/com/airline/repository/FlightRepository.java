@@ -4,8 +4,9 @@ import com.airline.entity.Flight;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface FlightRepository extends JpaRepository<Flight, Long> {
@@ -14,11 +15,11 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
     Optional<Flight> findByFlightNumber(String flightNumber);
 
-    List<Flight> findBySourceIgnoreCaseAndDestinationIgnoreCase(String source, String destination);
+    Page<Flight> findBySourceIgnoreCaseAndDestinationIgnoreCase(String source, String destination, Pageable pageable);
 
-    List<Flight> findBySourceIgnoreCaseContaining(String source);
+    Page<Flight> findBySourceIgnoreCaseContaining(String source, Pageable pageable);
 
-    List<Flight> findByDestinationIgnoreCaseContaining(String destination);
+    Page<Flight> findByDestinationIgnoreCaseContaining(String destination, Pageable pageable);
 
-    List<Flight> findBySourceIgnoreCaseContainingAndDestinationIgnoreCaseContaining(String source, String destination);
+    Page<Flight> findBySourceIgnoreCaseContainingAndDestinationIgnoreCaseContaining(String source, String destination, Pageable pageable);
 }

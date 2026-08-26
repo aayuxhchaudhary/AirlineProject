@@ -21,6 +21,11 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
   const [isSearching, setIsSearching] = useState(false);
   const [viewMode, setViewMode] = useState('list');
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState('id');
+  const [sortDirection, setSortDirection] = useState('desc');
+
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -30,15 +35,22 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const fetchFlights = async (isFirstLoad = false) => {
+  const fetchFlights = async (isFirstLoad = false, page = currentPage, sortField = sortBy, sortDir = sortDirection, searchMode = isSearching) => {
     if (isFirstLoad) {
       setInitialLoading(true);
     }
     try {
-      const response = await fetch('/api/flights');
+      let url = '';
+      if (searchMode && (source.trim() || destination.trim())) {
+        url = `/api/flights/search?source=${encodeURIComponent(source.trim())}&destination=${encodeURIComponent(destination.trim())}&page=${page}&size=10&sortBy=${sortField}&direction=${sortDir}`;
+      } else {
+        url = `/api/flights?page=${page}&size=10&sortBy=${sortField}&direction=${sortDir}`;
+      }
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch flight schedules');
       const data = await response.json();
-      setFlights(data);
+      setFlights(data.content || []);
+      setTotalPages(data.totalPages || 1);
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Unable to connect to flight server' });
     } finally {
@@ -66,17 +78,19 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
 
     setSearchLoading(true);
     setIsSearching(true);
+    setCurrentPage(0);
     try {
-      const response = await fetch(`/api/flights/search?source=${encodeURIComponent(source.trim())}&destination=${encodeURIComponent(destination.trim())}`);
+      const response = await fetch(`/api/flights/search?source=${encodeURIComponent(source.trim())}&destination=${encodeURIComponent(destination.trim())}&page=0&size=10&sortBy=${sortBy}&direction=${sortDirection}`);
       if (!response.ok) throw new Error('Failed to execute route search');
       const data = await response.json();
-      setFlights(data);
+      setFlights(data.content || []);
+      setTotalPages(data.totalPages || 1);
 
       const routeDesc = [source.trim(), destination.trim()].filter(Boolean).join(' → ');
-      if (data.length > 0) {
+      if ((data.content || []).length > 0) {
         onShowToast({
           type: 'success',
-          message: `Found ${data.length} flight${data.length === 1 ? '' : 's'} matching "${routeDesc}"`
+          message: `Found ${data.totalElements || data.content.length} flight${data.content.length === 1 ? '' : 's'} matching "${routeDesc}"`
         });
       } else {
         onShowToast({
@@ -95,8 +109,9 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
     setSource('');
     setDestination('');
     setIsSearching(false);
+    setCurrentPage(0);
     setSearchLoading(true);
-    await fetchFlights(false);
+    await fetchFlights(false, 0, sortBy, sortDirection, false);
     setSearchLoading(false);
     onShowToast({ type: 'info', message: 'Search filters reset to all flights' });
   };
@@ -131,7 +146,8 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
 
       setIsCreateModalOpen(false);
       setEditFlightData(null);
-      fetchFlights(false);
+      setCurrentPage(0); // Go back to first page to see the newly created/updated flight easily
+      fetchFlights(false, 0, sortBy, sortDirection, isSearching);
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Operation failed' });
     } finally {
@@ -156,7 +172,7 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
 
       setIsDeleteModalOpen(false);
       setDeleteTarget(null);
-      fetchFlights(false);
+      fetchFlights(false, currentPage, sortBy, sortDirection, isSearching);
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Failed to delete flight' });
     }
@@ -305,7 +321,30 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
             </span>
           </div>
 
-          <div className="flex items-center p-1 rounded-xl bg-[var(--bg-pill)] border border-[var(--border-subtle)] space-x-1">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 mr-2">
+              <label htmlFor="sortSelect" className="text-[10px] font-mono text-[var(--text-dim)] uppercase tracking-wider hidden sm:block">Sort By</label>
+              <select
+                id="sortSelect"
+                value={`${sortBy}-${sortDirection}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortDir] = e.target.value.split('-');
+                  setSortBy(newSortBy);
+                  setSortDirection(newSortDir);
+                  setCurrentPage(0);
+                  fetchFlights(true, 0, newSortBy, newSortDir, isSearching);
+                }}
+                className="apple-input py-1.5 px-3 text-xs min-w-[140px] cursor-pointer"
+              >
+                <option value="id-desc">Newly Added</option>
+                <option value="ticketPrice-asc">Price (Low to High)</option>
+                <option value="ticketPrice-desc">Price (High to Low)</option>
+                <option value="departureTime-asc">Departure (Earliest)</option>
+                <option value="departureTime-desc">Departure (Latest)</option>
+              </select>
+            </div>
+
+            <div className="flex items-center p-1 rounded-xl bg-[var(--bg-pill)] border border-[var(--border-subtle)] space-x-1">
             <button
               type="button"
               onClick={() => setViewMode('list')}
@@ -336,8 +375,39 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
             </button>
           </div>
         </div>
+      </div>
 
         {renderContent()}
+
+        {totalPages > 1 && flights.length > 0 && !initialLoading && (
+          <div className="flex items-center justify-between mt-8 p-4 bg-[var(--bg-pill)] rounded-2xl border border-[var(--border-subtle)] shadow-sm">
+            <button
+              onClick={() => {
+                const newPage = Math.max(0, currentPage - 1);
+                setCurrentPage(newPage);
+                fetchFlights(false, newPage, sortBy, sortDirection, isSearching);
+              }}
+              disabled={currentPage === 0 || searchLoading}
+              className="apple-btn-secondary px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="text-xs font-semibold font-mono text-[var(--text-sub)]">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <button
+              onClick={() => {
+                const newPage = Math.min(totalPages - 1, currentPage + 1);
+                setCurrentPage(newPage);
+                fetchFlights(false, newPage, sortBy, sortDirection, isSearching);
+              }}
+              disabled={currentPage === totalPages - 1 || searchLoading}
+              className="apple-btn-secondary px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </main>
 
       <FlightDetailsModal

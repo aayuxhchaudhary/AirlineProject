@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { X, Lock, ShieldAlert } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
 export const AdminLoginModal = ({ isOpen, onClose, onShowToast }) => {
@@ -37,24 +36,16 @@ export const AdminLoginModal = ({ isOpen, onClose, onShowToast }) => {
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
+          <div
             onClick={onClose}
-            className="fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
+            className="animate-fade fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md"
           />
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
-            className="apple-card w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10"
+          <div
+            className="animate-modal apple-card w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10"
           >
             <button
               onClick={onClose}
@@ -116,9 +107,9 @@ export const AdminLoginModal = ({ isOpen, onClose, onShowToast }) => {
                 {loading ? 'Authenticating...' : 'Secure Login'}
               </button>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };

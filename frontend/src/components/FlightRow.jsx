@@ -56,33 +56,34 @@ export const FlightRow = ({ flight, onViewDetails, onEdit, onDelete }) => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-4 flex-1">
-          <div className="min-w-[110px]">
-            <p className="text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate">
+        <div className="flex flex-col flex-1 md:px-4">
+          <div className="flex items-center justify-between w-full">
+            <p className="text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate min-w-[80px]">
               {flight.source}
             </p>
+
+            <div className="flex-1 px-2 sm:px-4 max-w-[120px]">
+              <div className="w-full flex items-center justify-center relative">
+                <div className="w-full border-t border-dashed border-[var(--border-hover)]"></div>
+                <AscendingPlaneIcon className="h-4 w-auto text-[var(--text-main)] absolute z-10 px-1.5 bg-[var(--bg-card-solid)]" />
+              </div>
+            </div>
+
+            <p className="text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate min-w-[80px] text-right">
+              {flight.destination}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between mt-0.5 w-full">
             <p className="text-xs font-mono text-[var(--text-sub)] flex items-center gap-1">
               <Clock className="w-3 h-3 text-[var(--text-dim)] shrink-0" />
               <span>{dep.time}</span>
-              <span className="text-[10px] text-[var(--text-dim)]">({dep.date})</span>
+              <span className="text-[10px] text-[var(--text-dim)] hidden xl:inline">({dep.date})</span>
             </p>
-          </div>
-
-          <div className="flex flex-col items-center flex-1 max-w-[120px]">
-            <div className="w-full flex items-center justify-center relative my-1">
-              <div className="w-full border-t border-dashed border-[var(--border-hover)]"></div>
-              <AscendingPlaneIcon className="h-4 w-auto text-[var(--text-main)] absolute z-10 px-1.5 bg-[var(--bg-card-solid)]" />
-            </div>
-          </div>
-
-          <div className="min-w-[110px] text-right">
-            <p className="text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate">
-              {flight.destination}
-            </p>
-            <p className="text-xs font-mono text-[var(--text-sub)] flex items-center justify-end gap-1">
+            <p className="text-xs font-mono text-[var(--text-sub)] flex items-center gap-1">
+              <span className="text-[10px] text-[var(--text-dim)] hidden xl:inline">({arr.date})</span>
               <span>{arr.time}</span>
               <Clock className="w-3 h-3 text-[var(--text-dim)] shrink-0" />
-              <span className="text-[10px] text-[var(--text-dim)]">({arr.date})</span>
             </p>
           </div>
         </div>

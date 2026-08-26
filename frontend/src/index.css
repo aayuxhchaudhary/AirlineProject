@@ -97,6 +97,7 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  scrollbar-gutter: stable;
 }
 
 .font-display {
@@ -287,4 +288,40 @@ select.apple-input option {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-focus);
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-modal {
+  animation: modal-fade-in var(--transition-fast) forwards;
+}
+
+@keyframes dropdown-fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-dropdown {
+  animation: dropdown-fade-in var(--transition-fast) forwards;
+}
+
+@keyframes toast-slide-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-toast {
+  animation: toast-slide-in var(--transition-base) forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade {
+  animation: fade-in var(--transition-fast) forwards;
 }
