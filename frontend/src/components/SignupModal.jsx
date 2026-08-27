@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Lock, Mail, User, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { validEmail, normalizeEmail } from '../utils/email';
 
 export default function SignupModal({ isOpen, onClose }) {
   const { loginUser } = useAuth();
@@ -17,7 +18,7 @@ export default function SignupModal({ isOpen, onClose }) {
   const validateForm = () => {
     if (!formData.fullName.trim() || formData.fullName.length < 2) return "Full name must be at least 2 characters";
     if (!formData.email.trim()) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
+    if (!validEmail(formData.email)) return "Invalid email format";
     if (!formData.password || formData.password.length < 6) return "Password must be at least 6 characters";
     return null;
   };
@@ -34,11 +35,17 @@ export default function SignupModal({ isOpen, onClose }) {
     setError('');
     setIsLoading(true);
 
+    const payload = {
+      fullName: formData.fullName,
+      email: normalizeEmail(formData.email),
+      password: formData.password
+    };
+
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       let data;

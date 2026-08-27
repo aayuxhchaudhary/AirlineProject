@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { validEmail, normalizeEmail } from '../utils/email';
 
 export default function LoginModal({ isOpen, onClose }) {
   const { loginUser } = useAuth();
@@ -15,7 +16,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
   const validateForm = () => {
     if (!formData.email.trim()) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
+    if (!validEmail(formData.email)) return "Invalid email format";
     if (!formData.password) return "Password is required";
     return null;
   };
@@ -32,11 +33,16 @@ export default function LoginModal({ isOpen, onClose }) {
     setError('');
     setIsLoading(true);
 
+    const payload = {
+      email: normalizeEmail(formData.email),
+      password: formData.password
+    };
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       let data;

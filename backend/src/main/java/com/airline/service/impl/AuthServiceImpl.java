@@ -25,9 +25,25 @@ public class AuthServiceImpl implements AuthService {
         this.userRepository = userRepository;
     }
 
+    private String normalizeEmail(String email) {
+        if (email == null || email.isBlank()) return "";
+        String trimmed = email.trim().toLowerCase();
+        String[] parts = trimmed.split("@");
+        if (parts.length != 2) return trimmed;
+
+        String localPart = parts[0];
+        String domain = parts[1];
+
+        if ("gmail.com".equals(domain) || "googlemail.com".equals(domain)) {
+            String cleanedLocal = localPart.split("\\+")[0].replace(".", "");
+            return cleanedLocal + "@gmail.com";
+        }
+        return trimmed;
+    }
+
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
-        String identifier = loginRequest.getEmail() != null ? loginRequest.getEmail().trim() : "";
+        String identifier = normalizeEmail(loginRequest.getEmail());
 
         User user = userRepository.findByEmailIgnoreCase(identifier)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password."));
@@ -41,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse signup(SignupRequest signupRequest) {
-        String email = signupRequest.getEmail().trim();
+        String email = normalizeEmail(signupRequest.getEmail());
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new BadRequestException("Email is already registered.");
         }
