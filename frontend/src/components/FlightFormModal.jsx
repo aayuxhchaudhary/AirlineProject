@@ -23,9 +23,9 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
 
   const statusOptions = [
     { value: 'SCHEDULED', label: 'SCHEDULED' },
+    { value: 'ON_TIME', label: 'ON TIME' },
     { value: 'DELAYED', label: 'DELAYED' },
-    { value: 'CANCELLED', label: 'CANCELLED' },
-    { value: 'COMPLETED', label: 'COMPLETED' }
+    { value: 'CANCELLED', label: 'CANCELLED' }
   ];
 
   useEffect(() => {
@@ -88,7 +88,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
       return;
     }
 
-    if (dep < new Date(Date.now() - 60000)) {
+    if (!initialData && dep < new Date(Date.now() - 60000)) {
       setFormError('Departure time cannot be in the past.');
       return;
     }
@@ -125,7 +125,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
           />
 
           <div
-            className="animate-modal apple-card w-full max-w-xl rounded-3xl p-6 shadow-2xl relative z-10 my-8"
+            className="animate-modal apple-glass w-full max-w-xl rounded-3xl p-6 shadow-2xl relative z-10 my-8"
           >
             <button
               onClick={onClose}

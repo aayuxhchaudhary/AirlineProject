@@ -11,7 +11,7 @@ export const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, conf
           />
 
           <div
-            className="animate-modal apple-card w-full max-w-md rounded-3xl p-6 shadow-2xl relative z-10"
+            className="animate-modal apple-glass w-full max-w-md rounded-3xl p-6 shadow-2xl relative z-10"
           >
             <button
               onClick={onCancel}

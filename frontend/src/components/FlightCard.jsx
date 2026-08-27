@@ -1,4 +1,4 @@
-import { Clock, Users, Edit, Trash2, ArrowRight } from 'lucide-react';
+import { Clock, Users, Edit2, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AscendingPlaneIcon } from './AscendingPlaneIcon';
 
@@ -23,7 +23,7 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
     const s = (status || 'SCHEDULED').toUpperCase();
     switch (s) {
       case 'SCHEDULED':
-      case 'ON TIME':
+      case 'ON_TIME':
         return 'bg-[var(--btn-main-bg)] text-[var(--btn-main-text)] font-semibold';
       case 'DELAYED':
         return 'bg-[var(--status-warning-bg)] text-[var(--status-warning)] font-semibold';
@@ -52,14 +52,14 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
             </span>
           </div>
           <span className={`px-3 py-1 text-[9px] uppercase tracking-widest font-mono rounded-full ${getStatusStyle(flight.status)}`}>
-            {flight.status || 'SCHEDULED'}
+            {(flight.status || 'SCHEDULED').replace('_', ' ')}
           </span>
         </div>
 
         <div className="my-5 py-2">
           <div className="flex flex-col w-full">
             <div className="flex items-center justify-between w-full">
-              <p className="text-2xl font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%]">
+              <p className="text-xl font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%]">
                 {flight.source}
               </p>
 
@@ -70,7 +70,7 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
                 </div>
               </div>
 
-              <p className="text-2xl font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%] text-right">
+              <p className="text-xl font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%] text-right">
                 {flight.destination}
               </p>
             </div>
@@ -124,10 +124,9 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewDetails(flight)}
-            className="apple-btn-primary px-4 py-2 text-xs flex items-center space-x-1.5 shadow-md"
+            className="apple-btn-secondary px-4 py-2 text-xs"
           >
-            <span>Details</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            Details
           </button>
 
           {isAdmin && (
@@ -137,7 +136,7 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
                 className="apple-btn-secondary p-2 text-xs hover:border-[var(--border-hover)]"
                 aria-label="Edit flight"
               >
-                <Edit className="w-3.5 h-3.5" />
+                <Edit2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(flight)}

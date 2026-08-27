@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, RefreshCw, Loader2, LayoutList, LayoutGrid } from 'lucide-react';
 import { FlightCard } from '../components/FlightCard';
 import { FlightRow } from '../components/FlightRow';
@@ -9,11 +9,13 @@ import { Toast } from '../components/Toast';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { CityAutocomplete } from '../components/CityAutocomplete';
+import { CustomSelect } from '../components/CustomSelect';
 import { useAuth } from '../context/AuthContext';
 
 export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast, toast, setToast }) => {
   const { isAdmin } = useAuth();
   const [flights, setFlights] = useState([]);
+  const [totalElements, setTotalElements] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
   const [source, setSource] = useState('');
@@ -25,6 +27,8 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('id');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [filterStatus, setFilterStatus] = useState('');
+
 
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -35,33 +39,52 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const fetchFlights = async (isFirstLoad = false, page = currentPage, sortField = sortBy, sortDir = sortDirection, searchMode = isSearching) => {
-    if (isFirstLoad) {
-      setInitialLoading(true);
+  const abortControllerRef = useRef(null);
+
+  const fetchFlights = async ({
+    isFirstLoad = false,
+    page = currentPage,
+    sortField = sortBy,
+    sortDir = sortDirection,
+    searchMode = isSearching,
+    src = source,
+    dest = destination,
+    status = filterStatus
+  } = {}) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    if (isFirstLoad) setInitialLoading(true);
+
     try {
-      let url = '';
-      if (searchMode && (source.trim() || destination.trim())) {
-        url = `/api/flights/search?source=${encodeURIComponent(source.trim())}&destination=${encodeURIComponent(destination.trim())}&page=${page}&size=10&sortBy=${sortField}&direction=${sortDir}`;
+      const statusParam = status ? `&status=${status}` : '';
+      let url;
+      if (searchMode && (src.trim() || dest.trim())) {
+        url = `/api/flights/search?source=${encodeURIComponent(src.trim())}&destination=${encodeURIComponent(dest.trim())}&page=${page}&size=12&sortBy=${sortField}&direction=${sortDir}${statusParam}`;
       } else {
-        url = `/api/flights?page=${page}&size=10&sortBy=${sortField}&direction=${sortDir}`;
+        url = `/api/flights?page=${page}&size=12&sortBy=${sortField}&direction=${sortDir}${statusParam}`;
       }
-      const response = await fetch(url);
+
+      const response = await fetch(url, { signal });
       if (!response.ok) throw new Error('Failed to fetch flight schedules');
       const data = await response.json();
       setFlights(data.content || []);
-      setTotalPages(data.totalPages || 1);
+      setTotalPages(data.page?.totalPages ?? data.totalPages ?? 1);
+      setTotalElements(data.page?.totalElements ?? data.totalElements ?? 0);
     } catch (err) {
+      if (err.name === 'AbortError') return;
       onShowToast({ type: 'error', message: err.message || 'Unable to connect to flight server' });
     } finally {
-      if (isFirstLoad) {
-        setInitialLoading(false);
-      }
+      if (isFirstLoad) setInitialLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchFlights(true);
+    fetchFlights({ isFirstLoad: true });
+    return () => { abortControllerRef.current?.abort(); };
   }, []);
 
   const handleSearch = async (e) => {
@@ -80,23 +103,23 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
     setIsSearching(true);
     setCurrentPage(0);
     try {
-      const response = await fetch(`/api/flights/search?source=${encodeURIComponent(source.trim())}&destination=${encodeURIComponent(destination.trim())}&page=0&size=10&sortBy=${sortBy}&direction=${sortDirection}`);
+      const statusParam = filterStatus ? `&status=${filterStatus}` : '';
+      const response = await fetch(`/api/flights/search?source=${encodeURIComponent(source.trim())}&destination=${encodeURIComponent(destination.trim())}&page=0&size=12&sortBy=${sortBy}&direction=${sortDirection}${statusParam}`);
       if (!response.ok) throw new Error('Failed to execute route search');
       const data = await response.json();
       setFlights(data.content || []);
-      setTotalPages(data.totalPages || 1);
+      setTotalPages(data.page?.totalPages ?? data.totalPages ?? 1);
+      setTotalElements(data.page?.totalElements ?? data.totalElements ?? 0);
 
       const routeDesc = [source.trim(), destination.trim()].filter(Boolean).join(' → ');
+      const total = data.page?.totalElements ?? data.totalElements ?? data.content?.length ?? 0;
       if ((data.content || []).length > 0) {
         onShowToast({
           type: 'success',
-          message: `Found ${data.totalElements || data.content.length} flight${data.content.length === 1 ? '' : 's'} matching "${routeDesc}"`
+          message: `Found ${total} flight${total === 1 ? '' : 's'} matching "${routeDesc}"`
         });
       } else {
-        onShowToast({
-          type: 'error',
-          message: `No flights found matching route "${routeDesc}"`
-        });
+        onShowToast({ type: 'error', message: `No flights found matching route "${routeDesc}"` });
       }
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Error executing search query' });
@@ -110,8 +133,9 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
     setDestination('');
     setIsSearching(false);
     setCurrentPage(0);
+    setFilterStatus('');
     setSearchLoading(true);
-    await fetchFlights(false, 0, sortBy, sortDirection, false);
+    await fetchFlights({ isFirstLoad: false, page: 0, searchMode: false, src: '', dest: '', status: '' });
     setSearchLoading(false);
     onShowToast({ type: 'info', message: 'Search filters reset to all flights' });
   };
@@ -129,7 +153,8 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
+      let data;
+      try { data = await response.json(); } catch { data = {}; }
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to save flight schedule');
@@ -146,8 +171,8 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
 
       setIsCreateModalOpen(false);
       setEditFlightData(null);
-      setCurrentPage(0); // Go back to first page to see the newly created/updated flight easily
-      fetchFlights(false, 0, sortBy, sortDirection, isSearching);
+      setCurrentPage(0);
+      fetchFlights({ isFirstLoad: false, page: 0, sortField: sortBy, sortDir: sortDirection, searchMode: isSearching });
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Operation failed' });
     } finally {
@@ -157,26 +182,20 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
-
     try {
-      const response = await fetch(`/api/flights/${deleteTarget.id}`, {
-        method: 'DELETE'
-      });
-
+      const response = await fetch(`/api/flights/${deleteTarget.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete flight');
 
-      onShowToast({
-        type: 'success',
-        message: `Flight ${deleteTarget.flightNumber} deleted successfully`
-      });
+      onShowToast({ type: 'success', message: `Flight ${deleteTarget.flightNumber} removed successfully` });
 
       setIsDeleteModalOpen(false);
       setDeleteTarget(null);
-      fetchFlights(false, currentPage, sortBy, sortDirection, isSearching);
+      fetchFlights({ isFirstLoad: false, page: currentPage, searchMode: isSearching });
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Failed to delete flight' });
     }
   };
+
 
   const handleViewDetails = (f) => {
     setSelectedFlight(f);
@@ -311,71 +330,99 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
       </section>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex items-center justify-between mb-6 pb-3 border-b border-[var(--border-subtle)]">
-          <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 mb-6 pb-3 border-b border-[var(--border-subtle)]">
+          <div className="flex items-center justify-between sm:justify-start space-x-3">
             <h2 className="text-xs font-bold text-[var(--text-main)] tracking-widest uppercase font-display">
               Available Schedules
             </h2>
             <span className="px-2.5 py-0.5 rounded-full bg-[var(--bg-pill)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-sub)]">
-              {initialLoading ? '—' : flights.length}
+              {initialLoading ? '—' : totalElements}
             </span>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2 mr-2">
-              <label htmlFor="sortSelect" className="text-[10px] font-mono text-[var(--text-dim)] uppercase tracking-wider hidden sm:block">Sort By</label>
-              <select
-                id="sortSelect"
-                value={`${sortBy}-${sortDirection}`}
-                onChange={(e) => {
-                  const [newSortBy, newSortDir] = e.target.value.split('-');
-                  setSortBy(newSortBy);
-                  setSortDirection(newSortDir);
-                  setCurrentPage(0);
-                  fetchFlights(true, 0, newSortBy, newSortDir, isSearching);
-                }}
-                className="apple-input py-1.5 px-3 text-xs min-w-[140px] cursor-pointer"
-              >
-                <option value="id-desc">Newly Added</option>
-                <option value="ticketPrice-asc">Price (Low to High)</option>
-                <option value="ticketPrice-desc">Price (High to Low)</option>
-                <option value="departureTime-asc">Departure (Earliest)</option>
-                <option value="departureTime-desc">Departure (Latest)</option>
-              </select>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center space-x-1.5 flex-1 sm:flex-initial">
+              <label className="text-[10px] font-mono text-[var(--text-dim)] uppercase tracking-wider hidden md:block">Sort By</label>
+              <div className="w-full sm:w-auto sm:min-w-[150px]">
+                <CustomSelect
+                  id="sortSelect"
+                  name="sortSelect"
+                  value={`${sortBy}-${sortDirection}`}
+                  onChange={(e) => {
+                    const [newSortBy, newSortDir] = e.target.value.split('-');
+                    setSortBy(newSortBy);
+                    setSortDirection(newSortDir);
+                    setCurrentPage(0);
+                    fetchFlights({ isFirstLoad: true, page: 0, sortField: newSortBy, sortDir: newSortDir, searchMode: isSearching });
+                  }}
+                  options={[
+                    { value: 'id-desc', label: 'Newly Added' },
+                    { value: 'ticketPrice-asc', label: 'Price: Low → High' },
+                    { value: 'ticketPrice-desc', label: 'Price: High → Low' },
+                    { value: 'departureTime-asc', label: 'Departure: Earliest' },
+                    { value: 'departureTime-desc', label: 'Departure: Latest' },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-1.5 flex-1 sm:flex-initial">
+              <label className="text-[10px] font-mono text-[var(--text-dim)] uppercase tracking-wider hidden md:block">Status</label>
+              <div className="w-full sm:w-auto sm:min-w-[125px]">
+                <CustomSelect
+                  id="filterStatus"
+                  name="filterStatus"
+                  value={filterStatus}
+                  onChange={(e) => {
+                    const newStatus = e.target.value;
+                    setFilterStatus(newStatus);
+                    setCurrentPage(0);
+                    fetchFlights({ isFirstLoad: true, page: 0, sortField: sortBy, sortDir: sortDirection, searchMode: isSearching, status: newStatus });
+                  }}
+                  options={[
+                    { value: '', label: 'All Statuses' },
+                    { value: 'SCHEDULED', label: 'Scheduled' },
+                    { value: 'ON_TIME', label: 'On Time' },
+                    { value: 'DELAYED', label: 'Delayed' },
+                    { value: 'CANCELLED', label: 'Cancelled' },
+                  ]}
+                />
+              </div>
             </div>
 
             <div className="flex items-center p-1 rounded-xl bg-[var(--bg-pill)] border border-[var(--border-subtle)] space-x-1">
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              aria-label="List view"
-              aria-pressed={viewMode === 'list'}
-              className={`p-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-[var(--bg-card-solid)] text-[var(--text-main)] shadow-sm font-semibold'
-                  : 'text-[var(--text-dim)] hover:text-[var(--text-main)]'
-              }`}
-            >
-              <LayoutList className="w-4 h-4" />
-              <span className="text-[10px] font-mono uppercase tracking-wider hidden sm:inline">List</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              aria-label="Grid view"
-              aria-pressed={viewMode === 'grid'}
-              className={`p-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition-colors ${
-                viewMode === 'grid'
-                  ? 'bg-[var(--bg-card-solid)] text-[var(--text-main)] shadow-sm font-semibold'
-                  : 'text-[var(--text-dim)] hover:text-[var(--text-main)]'
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              <span className="text-[10px] font-mono uppercase tracking-wider hidden sm:inline">Grid</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                aria-label="List view"
+                aria-pressed={viewMode === 'list'}
+                className={`p-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-[var(--bg-card-solid)] text-[var(--text-main)] shadow-sm font-semibold'
+                    : 'text-[var(--text-dim)] hover:text-[var(--text-main)]'
+                }`}
+              >
+                <LayoutList className="w-4 h-4" />
+                <span className="text-[10px] font-mono uppercase tracking-wider hidden sm:inline">List</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                aria-label="Grid view"
+                aria-pressed={viewMode === 'grid'}
+                className={`p-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-[var(--bg-card-solid)] text-[var(--text-main)] shadow-sm font-semibold'
+                    : 'text-[var(--text-dim)] hover:text-[var(--text-main)]'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+                <span className="text-[10px] font-mono uppercase tracking-wider hidden sm:inline">Grid</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+
 
         {renderContent()}
 
@@ -385,7 +432,7 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
               onClick={() => {
                 const newPage = Math.max(0, currentPage - 1);
                 setCurrentPage(newPage);
-                fetchFlights(false, newPage, sortBy, sortDirection, isSearching);
+                fetchFlights({ isFirstLoad: false, page: newPage, searchMode: isSearching });
               }}
               disabled={currentPage === 0 || searchLoading}
               className="apple-btn-secondary px-4 py-2 text-xs disabled:opacity-50"
@@ -399,7 +446,7 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
               onClick={() => {
                 const newPage = Math.min(totalPages - 1, currentPage + 1);
                 setCurrentPage(newPage);
-                fetchFlights(false, newPage, sortBy, sortDirection, isSearching);
+                fetchFlights({ isFirstLoad: false, page: newPage, searchMode: isSearching });
               }}
               disabled={currentPage === totalPages - 1 || searchLoading}
               className="apple-btn-secondary px-4 py-2 text-xs disabled:opacity-50"
@@ -432,8 +479,8 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
 
       <ConfirmModal
         isOpen={isDeleteModalOpen}
-        title="Delete Flight Schedule"
-        message={`Are you sure you want to delete flight ${deleteTarget?.flightNumber} (${deleteTarget?.source} → ${deleteTarget?.destination})? This action cannot be undone.`}
+        title="Remove Flight Schedule"
+        message={`Are you sure you want to remove flight ${deleteTarget?.flightNumber} (${deleteTarget?.source} → ${deleteTarget?.destination})? The flight will be soft-deleted and hidden from the dashboard.`}
         onConfirm={handleDeleteConfirm}
         onCancel={() => {
           setIsDeleteModalOpen(false);

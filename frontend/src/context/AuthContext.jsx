@@ -3,23 +3,29 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [admin, setAdmin] = useState(() => {
-    const saved = localStorage.getItem('airline_admin');
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('airline_user');
     return saved ? JSON.parse(saved) : null;
   });
 
-  const loginAdmin = (adminData) => {
-    setAdmin(adminData);
-    localStorage.setItem('airline_admin', JSON.stringify(adminData));
+  const loginUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('airline_user', JSON.stringify(userData));
   };
 
-  const logoutAdmin = () => {
-    setAdmin(null);
-    localStorage.removeItem('airline_admin');
+  const logoutUser = () => {
+    setUser(null);
+    localStorage.removeItem('airline_user');
   };
 
   return (
-    <AuthContext.Provider value={{ admin, loginAdmin, logoutAdmin, isAdmin: !!admin }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loginUser, 
+      logoutUser, 
+      isAdmin: user?.role === 'ADMIN',
+      isUser: user?.role === 'USER'
+    }}>
       {children}
     </AuthContext.Provider>
   );

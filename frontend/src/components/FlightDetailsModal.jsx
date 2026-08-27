@@ -23,7 +23,7 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
     const s = (status || 'SCHEDULED').toUpperCase();
     switch (s) {
       case 'SCHEDULED':
-      case 'ON TIME':
+      case 'ON_TIME':
         return 'text-[var(--status-success)]';
       case 'DELAYED':
         return 'text-[var(--status-warning)]';
@@ -49,7 +49,7 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
           />
 
           <div
-            className="animate-modal apple-card w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 my-8 overflow-hidden"
+            className="animate-modal apple-glass w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 my-8 overflow-hidden"
           >
             <div className="bg-[var(--bg-pill)] border-b border-[var(--border-subtle)] p-6">
               <button
@@ -113,7 +113,7 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
                     <Activity className="w-3 h-3" /> Status
                   </p>
                   <p className={`text-sm font-bold ${getStatusColor(flight.status)}`}>
-                    {flight.status || 'SCHEDULED'}
+                    {(flight.status || 'SCHEDULED').replace('_', ' ')}
                   </p>
                 </div>
                 <div>

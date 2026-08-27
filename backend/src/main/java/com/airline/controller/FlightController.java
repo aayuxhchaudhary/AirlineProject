@@ -1,14 +1,14 @@
 package com.airline.controller;
 
-import com.airline.dto.ApiResponse;
 import com.airline.entity.Flight;
+import com.airline.entity.enums.FlightStatus;
 import com.airline.service.FlightService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.data.domain.Page;
 import java.util.Map;
 
 @RestController
@@ -23,41 +23,35 @@ public class FlightController {
         this.flightService = flightService;
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse> createFlight(@RequestBody Flight flight) {
-        Flight createdFlight = flightService.createFlight(flight);
-        ApiResponse response = new ApiResponse(true, "Flight created successfully", createdFlight);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
     @GetMapping
     public ResponseEntity<Page<Flight>> getAllFlights(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-        Page<Flight> flights = flightService.getAllFlights(page, size, sortBy, direction);
-        return ResponseEntity.ok(flights);
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) FlightStatus status) {
+        return ResponseEntity.ok(flightService.getAllFlights(page, size, sortBy, direction, status));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Flight> getFlightById(@PathVariable Long id) {
-        Flight flight = flightService.getFlightById(id);
-        return ResponseEntity.ok(flight);
+        return ResponseEntity.ok(flightService.getFlightById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<Flight> createFlight(@Valid @RequestBody Flight flight) {
+        return ResponseEntity.status(201).body(flightService.createFlight(flight));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse> updateFlight(@PathVariable Long id, @RequestBody Flight flightDetails) {
-        Flight updatedFlight = flightService.updateFlight(id, flightDetails);
-        ApiResponse response = new ApiResponse(true, "Flight updated successfully", updatedFlight);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Flight> updateFlight(@PathVariable Long id, @Valid @RequestBody Flight flightDetails) {
+        return ResponseEntity.ok(flightService.updateFlight(id, flightDetails));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteFlight(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Boolean>> deleteFlight(@PathVariable Long id) {
         flightService.deleteFlight(id);
-        ApiResponse response = new ApiResponse(true, "Flight deleted successfully");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("deleted", Boolean.TRUE));
     }
 
     @GetMapping("/search")
@@ -65,16 +59,10 @@ public class FlightController {
             @RequestParam(required = false, defaultValue = "") String source,
             @RequestParam(required = false, defaultValue = "") String destination,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-        Page<Flight> flights = flightService.searchFlights(source, destination, page, size, sortBy, direction);
-        return ResponseEntity.ok(flights);
-    }
-
-    @GetMapping("/status/{id}")
-    public ResponseEntity<Map<String, String>> getFlightStatus(@PathVariable Long id) {
-        String status = flightService.getFlightStatus(id);
-        return ResponseEntity.ok(Map.of("status", status));
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) FlightStatus status) {
+        return ResponseEntity.ok(flightService.searchFlights(source, destination, page, size, sortBy, direction, status));
     }
 }

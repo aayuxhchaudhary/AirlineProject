@@ -62,42 +62,38 @@ export const CustomSelect = ({ value, onChange, options, name, id }) => {
         <ChevronDown className={`w-4 h-4 text-[var(--text-dim)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      <>
-        {isOpen && (
-          <ul
-            id={listId}
-            role="listbox"
-            className="animate-dropdown absolute left-0 right-0 z-50 p-1 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-56 overflow-y-auto mt-1"
-          >
-            {options.map((opt, index) => {
-              const isSelected = opt.value === value;
-              return (
-                <li
-                  key={opt.value}
-                  id={`${listId}-option-${index}`}
-                  role="option"
-                  aria-selected={isSelected}
-                  onClick={() => {
-                    onChange({ target: { name, value: opt.value } });
-                    setIsOpen(false);
-                  }}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'bg-[var(--bg-pill)] text-[var(--text-main)]'
-                      : index === activeIndex
-                        ? 'bg-[var(--bg-pill)] text-[var(--text-main)]'
-                        : 'text-[var(--text-sub)] hover:bg-[var(--bg-pill)] hover:text-[var(--text-main)]'
-                  }`}
-                >
-                  <span>{opt.label}</span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-[var(--text-main)]" />}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </>
+      {isOpen && (
+        <ul
+          id={listId}
+          role="listbox"
+          className="animate-dropdown absolute left-0 right-0 top-[calc(100%+4px)] z-50 p-1 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-56 overflow-y-auto"
+        >
+          {options.map((opt, index) => {
+            const isSelected = opt.value === value;
+            return (
+              <li
+                key={opt.value}
+                id={`${listId}-option-${index}`}
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => {
+                  onChange({ target: { name, value: opt.value } });
+                  setIsOpen(false);
+                }}
+                onMouseEnter={() => setActiveIndex(index)}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between cursor-pointer transition-colors ${
+                  isSelected || index === activeIndex
+                    ? 'bg-[var(--bg-pill)] text-[var(--text-main)]'
+                    : 'text-[var(--text-sub)] hover:bg-[var(--bg-pill)] hover:text-[var(--text-main)]'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <Check className="w-3.5 h-3.5 text-[var(--text-main)]" />}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 };

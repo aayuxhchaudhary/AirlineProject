@@ -100,6 +100,10 @@ html, body {
   scrollbar-gutter: stable;
 }
 
+.fixed.inset-0.overflow-y-auto {
+  scrollbar-gutter: stable;
+}
+
 .font-display {
   font-family: var(--font-display);
 }

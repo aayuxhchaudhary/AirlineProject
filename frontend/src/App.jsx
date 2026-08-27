@@ -1,20 +1,26 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
-import { AdminLoginModal } from './components/AdminLoginModal';
+import LoginModal from './components/LoginModal';
+import SignupModal from './components/SignupModal';
 import { Dashboard } from './pages/Dashboard';
 
 export default function App() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
+  const toastTimerRef = useRef(null);
+
   const showToast = (toastObj) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast(toastObj);
-    setTimeout(() => {
+    toastTimerRef.current = setTimeout(() => {
       setToast(null);
+      toastTimerRef.current = null;
     }, 4000);
   };
 
@@ -26,6 +32,7 @@ export default function App() {
             <Navbar
               onOpenCreateModal={() => setIsCreateModalOpen(true)}
               onOpenLoginModal={() => setIsLoginModalOpen(true)}
+              onOpenSignupModal={() => setIsSignupModalOpen(true)}
             />
 
             <div className="flex-1">
@@ -45,10 +52,14 @@ export default function App() {
               </Routes>
             </div>
 
-            <AdminLoginModal
+            <LoginModal
               isOpen={isLoginModalOpen}
               onClose={() => setIsLoginModalOpen(false)}
-              onShowToast={showToast}
+            />
+            
+            <SignupModal
+              isOpen={isSignupModalOpen}
+              onClose={() => setIsSignupModalOpen(false)}
             />
           </div>
         </Router>
