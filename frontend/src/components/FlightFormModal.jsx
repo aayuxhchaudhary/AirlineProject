@@ -19,7 +19,11 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
 
   const [formError, setFormError] = useState('');
 
-  const nowString = new Date().toISOString().slice(0, 16);
+  const getLocalISOString = () => {
+    const d = new Date();
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+  };
 
   const statusOptions = [
     { value: 'SCHEDULED', label: 'SCHEDULED' },
@@ -219,7 +223,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                     id="departureTime"
                     type="datetime-local"
                     name="departureTime"
-                    min={nowString}
+                    min={initialData ? undefined : getLocalISOString()}
                     required
                     value={formData.departureTime}
                     onChange={handleChange}
@@ -235,7 +239,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                     id="arrivalTime"
                     type="datetime-local"
                     name="arrivalTime"
-                    min={formData.departureTime || nowString}
+                    min={formData.departureTime || (initialData ? undefined : getLocalISOString())}
                     required
                     value={formData.arrivalTime}
                     onChange={handleChange}

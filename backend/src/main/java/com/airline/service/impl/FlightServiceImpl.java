@@ -67,6 +67,10 @@ public class FlightServiceImpl implements FlightService {
         Flight flight = flightRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
 
+        if (flightRepository.existsByFlightNumberAndIdNot(flightDetails.getFlightNumber(), id)) {
+            throw new BadRequestException("Flight number '" + flightDetails.getFlightNumber() + "' is already in use by another flight.");
+        }
+
         flight.setFlightNumber(flightDetails.getFlightNumber());
         flight.setAirlineName(flightDetails.getAirlineName());
         flight.setSource(flightDetails.getSource());
@@ -97,5 +101,10 @@ public class FlightServiceImpl implements FlightService {
             return flightRepository.findBySourceContainingIgnoreCaseAndDestinationContainingIgnoreCaseAndStatus(source, destination, status, pageable);
         }
         return flightRepository.findBySourceContainingIgnoreCaseAndDestinationContainingIgnoreCase(source, destination, pageable);
+    }
+
+    @Override
+    public java.util.List<String> getDistinctCities() {
+        return flightRepository.findDistinctCities();
     }
 }

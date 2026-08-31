@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Lock, LogOut, Plus, Sun, Moon } from 'lucide-react';
+import { LogOut, Plus, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { AscendingPlaneIcon } from './AscendingPlaneIcon';

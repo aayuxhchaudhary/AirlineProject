@@ -1,44 +1,72 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { MapPin, X } from 'lucide-react';
 
-const POPULAR_CITIES = [
-  'Delhi',
-  'Mumbai',
-  'Bengaluru',
-  'Chennai',
-  'Kolkata',
-  'Hyderabad',
-  'Ahmedabad',
-  'Pune',
-  'Jaipur',
-  'Goa',
-  'Chandigarh',
-  'Lucknow',
-  'Kochi',
-  'Guwahati',
-  'Varanasi',
-  'Amritsar',
-  'Dubai',
-  'London',
-  'Singapore',
-  'New York',
-  'Tokyo',
-  'Frankfurt',
-  'Bangkok',
-  'Sydney',
-  'Paris'
+const FALLBACK_CITIES = [
+  'Ahmedabad', 'Bangalore', 'Bangkok', 'Bengaluru', 'Berlin',
+  'Chennai', 'Delhi', 'Dubai', 'Frankfurt', 'Goa', 'Guwahati',
+  'Hong Kong', 'Hyderabad', 'Jaipur', 'Kolkata', 'Kuala Lumpur',
+  'London', 'Lucknow', 'Mumbai', 'New York', 'Paris', 'Pune',
+  'Seoul', 'Singapore', 'Sydney', 'Tokyo', 'Toronto', 'Zurich'
 ];
+
+let cachedCities = null;
+let fetchPromise = null;
+
+const loadCities = async () => {
+  if (cachedCities) return cachedCities;
+  if (!fetchPromise) {
+    fetchPromise = fetch('/api/flights/cities')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        const set = new Set([...(Array.isArray(data) ? data : []), ...FALLBACK_CITIES]);
+        cachedCities = Array.from(set).sort((a, b) => a.localeCompare(b));
+        return cachedCities;
+      })
+      .catch(() => {
+        cachedCities = FALLBACK_CITIES;
+        return cachedCities;
+      });
+  }
+  return fetchPromise;
+};
 
 export const CityAutocomplete = ({ value = '', onChange, name, id, className = 'apple-input w-full' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [availableCities, setAvailableCities] = useState(cachedCities || FALLBACK_CITIES);
   const containerRef = useRef(null);
   const listRef = useRef(null);
   const listId = `${id || name}-listbox`;
 
-  const filteredCities = POPULAR_CITIES.filter((city) =>
-    city.toLowerCase().includes((value || '').trim().toLowerCase())
-  );
+  useEffect(() => {
+    loadCities().then(cities => {
+      setAvailableCities(cities);
+    });
+  }, []);
+
+  const filteredCities = useMemo(() => {
+    const q = (value || '').trim().toLowerCase();
+    if (!q) return availableCities.slice(0, 10);
+
+    const prefixMatches = [];
+    const wordMatches = [];
+    const substringMatches = [];
+
+    for (let i = 0; i < availableCities.length; i++) {
+      const city = availableCities[i];
+      const lower = city.toLowerCase();
+
+      if (lower.startsWith(q)) {
+        prefixMatches.push(city);
+      } else if (lower.includes(' ' + q) || lower.includes('-' + q)) {
+        wordMatches.push(city);
+      } else if (lower.includes(q)) {
+        substringMatches.push(city);
+      }
+    }
+
+    return [...prefixMatches, ...wordMatches, ...substringMatches].slice(0, 10);
+  }, [availableCities, value]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -99,7 +127,10 @@ export const CityAutocomplete = ({ value = '', onChange, name, id, className = '
             onChange(e);
             setIsOpen(true);
           }}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => {
+            loadCities().then(setAvailableCities);
+            setIsOpen(true);
+          }}
           onKeyDown={handleKeyDown}
           placeholder="Enter city..."
           className={`${className} ${value ? 'pr-9' : ''}`}
@@ -117,35 +148,36 @@ export const CityAutocomplete = ({ value = '', onChange, name, id, className = '
         )}
       </div>
 
-      <>
-        {isOpen && filteredCities.length > 0 && (
-          <ul
-            ref={listRef}
-            id={listId}
-            role="listbox"
-            className="animate-dropdown absolute left-0 right-0 z-[100] p-1.5 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-48 overflow-y-auto mt-2"
-          >
-            {filteredCities.map((city, index) => (
-              <li
-                key={city}
-                id={`${listId}-option-${index}`}
-                role="option"
-                aria-selected={index === activeIndex}
-                onMouseDown={() => handleSelect(city)}
-                onMouseEnter={() => setActiveIndex(index)}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 cursor-pointer transition-colors ${
-                  index === activeIndex
-                    ? 'bg-[var(--bg-pill)] text-[var(--text-main)]'
-                    : 'text-[var(--text-sub)] hover:bg-[var(--bg-pill)] hover:text-[var(--text-main)]'
-                }`}
-              >
-                <MapPin className="w-3.5 h-3.5 text-[var(--text-dim)] shrink-0" />
-                <span>{city}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </>
+      {isOpen && filteredCities.length > 0 && (
+        <ul
+          ref={listRef}
+          id={listId}
+          role="listbox"
+          className="animate-dropdown absolute left-0 right-0 z-[100] p-1.5 bg-[var(--bg-card-solid)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl max-h-48 overflow-y-auto mt-2"
+        >
+          {filteredCities.map((city, index) => (
+            <li
+              key={city}
+              id={`${listId}-option-${index}`}
+              role="option"
+              aria-selected={index === activeIndex}
+              onMouseEnter={() => setActiveIndex(index)}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleSelect(city);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 cursor-pointer transition-colors ${
+                index === activeIndex
+                  ? 'bg-[var(--bg-pill)] text-[var(--text-main)]'
+                  : 'text-[var(--text-sub)] hover:bg-[var(--bg-pill)] hover:text-[var(--text-main)]'
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5 text-[var(--text-dim)] shrink-0" />
+              <span>{city}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

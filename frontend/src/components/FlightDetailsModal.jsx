@@ -34,10 +34,12 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
     }
   };
 
-  const formattedPrice = Number(flight.ticketPrice || 0).toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  const formattedPrice = Number.isFinite(Number(flight?.ticketPrice))
+    ? Number(flight.ticketPrice).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : '0.00';
 
   return (
     <>

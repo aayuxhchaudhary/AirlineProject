@@ -1,21 +1,34 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('airline_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('airline_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      localStorage.removeItem('airline_user');
+      return null;
+    }
   });
 
   const loginUser = (userData) => {
     setUser(userData);
-    localStorage.setItem('airline_user', JSON.stringify(userData));
+    try {
+      localStorage.setItem('airline_user', JSON.stringify(userData));
+    } catch {
+      // Ignore quota errors
+    }
   };
 
   const logoutUser = () => {
     setUser(null);
-    localStorage.removeItem('airline_user');
+    try {
+      localStorage.removeItem('airline_user');
+    } catch {
+      // Ignore
+    }
   };
 
   return (

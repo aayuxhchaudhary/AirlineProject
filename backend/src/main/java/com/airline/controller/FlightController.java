@@ -65,4 +65,9 @@ public class FlightController {
             @RequestParam(required = false) FlightStatus status) {
         return ResponseEntity.ok(flightService.searchFlights(source, destination, page, size, sortBy, direction, status));
     }
+
+    @GetMapping("/cities")
+    public ResponseEntity<java.util.List<String>> getDistinctCities() {
+        return ResponseEntity.ok(flightService.getDistinctCities());
+    }
 }

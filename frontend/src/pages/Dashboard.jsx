@@ -172,7 +172,7 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
       setIsCreateModalOpen(false);
       setEditFlightData(null);
       setCurrentPage(0);
-      fetchFlights({ isFirstLoad: false, page: 0, sortField: sortBy, sortDir: sortDirection, searchMode: isSearching });
+      fetchFlights({ isFirstLoad: false, page: 0, sortField: sortBy, sortDir: sortDirection, searchMode: isSearching, status: filterStatus });
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Operation failed' });
     } finally {
@@ -190,7 +190,12 @@ export const Dashboard = ({ isCreateModalOpen, setIsCreateModalOpen, onShowToast
 
       setIsDeleteModalOpen(false);
       setDeleteTarget(null);
-      fetchFlights({ isFirstLoad: false, page: currentPage, searchMode: isSearching });
+      const isLastItemOnPage = flights.length === 1 && currentPage > 0;
+      const targetPage = isLastItemOnPage ? currentPage - 1 : currentPage;
+      if (isLastItemOnPage) {
+        setCurrentPage(targetPage);
+      }
+      fetchFlights({ isFirstLoad: false, page: targetPage, searchMode: isSearching, status: filterStatus });
     } catch (err) {
       onShowToast({ type: 'error', message: err.message || 'Failed to delete flight' });
     }

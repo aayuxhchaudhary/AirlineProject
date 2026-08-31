@@ -34,10 +34,12 @@ export const FlightCard = ({ flight, onViewDetails, onEdit, onDelete }) => {
     }
   };
 
-  const formattedPrice = Number(flight.ticketPrice || 0).toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  const formattedPrice = Number.isFinite(Number(flight?.ticketPrice))
+    ? Number(flight.ticketPrice).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : '0.00';
 
   return (
     <div className="apple-card p-6 flex flex-col justify-between transition-colors duration-200 relative group border border-[var(--border-subtle)] hover:border-[var(--border-hover)]">
