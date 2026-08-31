@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { AscendingPlaneIcon } from './AscendingPlaneIcon';
 
-export const Navbar = ({ onOpenCreateModal, onOpenLoginModal, onOpenSignupModal }) => {
+export const Navbar = ({ onOpenCreateModal, onOpenLoginModal, onOpenSignupModal, onShowToast }) => {
   const { user, logoutUser, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -12,8 +12,8 @@ export const Navbar = ({ onOpenCreateModal, onOpenLoginModal, onOpenSignupModal 
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-[var(--border-subtle)] bg-[var(--bg-card)] backdrop-blur-xl transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group">
-          <AscendingPlaneIcon className="h-8 sm:h-9 w-auto text-[var(--text-main)] transition-opacity group-hover:opacity-80 shrink-0" />
+        <Link to="/" className="flex items-center space-x-2.5 sm:space-x-3 group">
+          <AscendingPlaneIcon className="h-10 sm:h-11 w-auto text-[var(--text-main)] transition-opacity group-hover:opacity-80 shrink-0" />
           <span className="text-sm sm:text-base font-bold font-display tracking-[0.2em] sm:tracking-[0.25em] text-[var(--text-main)] uppercase leading-none">
             AIRWAYS
           </span>
@@ -56,6 +56,10 @@ export const Navbar = ({ onOpenCreateModal, onOpenLoginModal, onOpenSignupModal 
                 onClick={() => {
                   logoutUser();
                   navigate('/');
+                  onShowToast?.({
+                    type: 'info',
+                    message: 'You have been logged out successfully.'
+                  });
                 }}
                 className="apple-btn-icon p-2 rounded-xl border border-[var(--border-subtle)] hover:border-[var(--border-hover)]"
                 aria-label="Logout"

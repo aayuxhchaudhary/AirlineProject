@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
+import { Toast } from './components/Toast';
 import LoginModal from './components/LoginModal';
 import SignupModal from './components/SignupModal';
 import { Dashboard } from './pages/Dashboard';
@@ -28,14 +29,15 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans transition-colors">
+          <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans transition-colors overflow-x-hidden w-full max-w-full">
             <Navbar
               onOpenCreateModal={() => setIsCreateModalOpen(true)}
               onOpenLoginModal={() => setIsLoginModalOpen(true)}
               onOpenSignupModal={() => setIsSignupModalOpen(true)}
+              onShowToast={showToast}
             />
 
-            <div className="flex-1">
+            <div className="flex-1 w-full max-w-full overflow-x-hidden">
               <Routes>
                 <Route
                   path="/"
@@ -44,8 +46,6 @@ export default function App() {
                       isCreateModalOpen={isCreateModalOpen}
                       setIsCreateModalOpen={setIsCreateModalOpen}
                       onShowToast={showToast}
-                      toast={toast}
-                      setToast={setToast}
                     />
                   }
                 />
@@ -55,12 +55,16 @@ export default function App() {
             <LoginModal
               isOpen={isLoginModalOpen}
               onClose={() => setIsLoginModalOpen(false)}
+              onShowToast={showToast}
             />
             
             <SignupModal
               isOpen={isSignupModalOpen}
               onClose={() => setIsSignupModalOpen(false)}
+              onShowToast={showToast}
             />
+
+            <Toast toast={toast} onClose={() => setToast(null)} />
           </div>
         </Router>
       </AuthProvider>

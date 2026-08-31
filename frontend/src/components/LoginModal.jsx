@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { X, Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
+import { X, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { validEmail, normalizeEmail } from '../utils/email';
 
-export default function LoginModal({ isOpen, onClose }) {
+export default function LoginModal({ isOpen, onClose, onShowToast }) {
   const { loginUser } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -56,6 +56,11 @@ export default function LoginModal({ isOpen, onClose }) {
         loginUser(data);
         onClose();
         setFormData({ email: '', password: '' });
+        const name = data.fullName?.trim() || data.email || 'User';
+        onShowToast?.({
+          type: 'success',
+          message: `Welcome back, ${name}! Logged in successfully.`
+        });
       } else {
         if (data.errors && Object.keys(data.errors).length > 0) {
           const firstError = Object.values(data.errors)[0];
@@ -79,10 +84,10 @@ export default function LoginModal({ isOpen, onClose }) {
       <div className="animate-fade fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md" />
 
       <div
-        className="animate-modal apple-glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative z-10 my-8"
+        className="animate-modal apple-modal rounded-3xl w-full max-w-md overflow-hidden relative z-10 my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)] bg-[var(--bg-pill)]">
+        <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)]">
           <h2 className="text-xl font-display font-bold text-[var(--text-main)]">Welcome Back</h2>
           <button
             onClick={onClose}
@@ -93,7 +98,7 @@ export default function LoginModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4" noValidate>
           {error && (
             <div className="flex items-center gap-2.5 p-3.5 text-xs font-semibold text-[var(--status-danger)] bg-[var(--status-danger-bg)] rounded-xl border border-[var(--status-danger)]/30">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -105,42 +110,36 @@ export default function LoginModal({ isOpen, onClose }) {
             <label htmlFor="login-email" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest">
               Email *
             </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
-              <input
-                id="login-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => {
-                  setError('');
-                  setFormData(prev => ({ ...prev, email: e.target.value }));
-                }}
-                className="apple-input w-full pl-10"
-                placeholder="name@example.com"
-                required
-              />
-            </div>
+            <input
+              id="login-email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => {
+                setError('');
+                setFormData(prev => ({ ...prev, email: e.target.value }));
+              }}
+              className="apple-input w-full"
+              placeholder="Enter your email address"
+              required
+            />
           </div>
 
           <div className="space-y-1.5">
             <label htmlFor="login-password" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest">
               Password *
             </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
-              <input
-                id="login-password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => {
-                  setError('');
-                  setFormData(prev => ({ ...prev, password: e.target.value }));
-                }}
-                className="apple-input w-full pl-10"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
+            <input
+              id="login-password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => {
+                setError('');
+                setFormData(prev => ({ ...prev, password: e.target.value }));
+              }}
+              className="apple-input w-full"
+              placeholder="Enter your password"
+              required
+            />
           </div>
 
           <button

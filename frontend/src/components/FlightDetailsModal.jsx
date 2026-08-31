@@ -51,9 +51,9 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
           />
 
           <div
-            className="animate-modal apple-glass w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 my-8 overflow-hidden"
+            className="animate-modal apple-modal w-full max-w-2xl rounded-3xl relative z-10 my-8 overflow-hidden"
           >
-            <div className="bg-[var(--bg-pill)] border-b border-[var(--border-subtle)] p-6">
+            <div className="border-b border-[var(--border-subtle)] p-6">
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 text-[var(--text-dim)] hover:text-[var(--text-main)] p-2 rounded-xl hover:bg-[var(--bg-card)]"
@@ -155,7 +155,7 @@ export const FlightDetailsModal = ({ isOpen, flight, onClose }) => {
               </div>
             </div>
 
-            <div className="bg-[var(--bg-pill)] border-t border-[var(--border-subtle)] p-4 flex justify-end">
+            <div className="border-t border-[var(--border-subtle)] p-4 flex justify-end">
               <button
                 onClick={onClose}
                 className="apple-btn-primary py-2 px-5 text-xs shadow-md"

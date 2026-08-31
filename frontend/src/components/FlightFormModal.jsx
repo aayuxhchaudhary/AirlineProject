@@ -129,7 +129,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
           />
 
           <div
-            className="animate-modal apple-glass w-full max-w-xl rounded-3xl p-6 shadow-2xl relative z-10 my-8"
+            className="animate-modal apple-modal w-full max-w-xl rounded-3xl p-6 relative z-10 my-8"
           >
             <button
               onClick={onClose}
@@ -159,7 +159,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="flightNumber" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] mb-1.5 uppercase tracking-widest">
@@ -172,6 +172,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                     required
                     value={formData.flightNumber}
                     onChange={handleChange}
+                    placeholder="e.g. AI-202, 6E-451"
                     className="apple-input w-full"
                   />
                 </div>
@@ -187,6 +188,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                     required
                     value={formData.airlineName}
                     onChange={handleChange}
+                    placeholder="e.g. Air India, IndiGo"
                     className="apple-input w-full"
                   />
                 </div>
@@ -259,6 +261,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                     required
                     value={formData.totalSeats}
                     onChange={handleChange}
+                    placeholder="e.g. 180"
                     className="apple-input w-full"
                   />
                 </div>
@@ -276,6 +279,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                     required
                     value={formData.availableSeats}
                     onChange={handleChange}
+                    placeholder="e.g. 180"
                     className="apple-input w-full"
                   />
                 </div>
@@ -293,6 +297,7 @@ export const FlightFormModal = ({ isOpen, initialData, onClose, onSubmit, isSubm
                     required
                     value={formData.ticketPrice}
                     onChange={handleChange}
+                    placeholder="e.g. 4500.00"
                     className="apple-input w-full"
                   />
                 </div>

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { X, Lock, Mail, User, Loader2, AlertCircle } from 'lucide-react';
+import { X, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { validEmail, normalizeEmail } from '../utils/email';
 
-export default function SignupModal({ isOpen, onClose }) {
+export default function SignupModal({ isOpen, onClose, onShowToast }) {
   const { loginUser } = useAuth();
   const [formData, setFormData] = useState({
     fullName: '',
@@ -59,6 +59,11 @@ export default function SignupModal({ isOpen, onClose }) {
         loginUser(data);
         onClose();
         setFormData({ fullName: '', email: '', password: '' });
+        const name = data.fullName?.trim() || data.email || 'User';
+        onShowToast?.({
+          type: 'success',
+          message: `Account created successfully! Welcome to Airways, ${name}.`
+        });
       } else {
         if (data.errors && Object.keys(data.errors).length > 0) {
           const firstError = Object.values(data.errors)[0];
@@ -82,10 +87,10 @@ export default function SignupModal({ isOpen, onClose }) {
       <div className="animate-fade fixed inset-0 bg-[var(--backdrop)] backdrop-blur-md" />
 
       <div
-        className="animate-modal apple-glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative z-10 my-8"
+        className="animate-modal apple-modal rounded-3xl w-full max-w-md overflow-hidden relative z-10 my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)] bg-[var(--bg-pill)]">
+        <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)]">
           <h2 className="text-xl font-display font-bold text-[var(--text-main)]">Create an Account</h2>
           <button
             onClick={onClose}
@@ -96,7 +101,7 @@ export default function SignupModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4" noValidate>
           {error && (
             <div className="flex items-center gap-2.5 p-3.5 text-xs font-semibold text-[var(--status-danger)] bg-[var(--status-danger-bg)] rounded-xl border border-[var(--status-danger)]/30">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -108,63 +113,54 @@ export default function SignupModal({ isOpen, onClose }) {
             <label htmlFor="signup-fullname" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest">
               Full Name *
             </label>
-            <div className="relative">
-              <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
-              <input
-                id="signup-fullname"
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => {
-                  setError('');
-                  setFormData(prev => ({ ...prev, fullName: e.target.value }));
-                }}
-                className="apple-input w-full pl-10"
-                placeholder="John Doe"
-                required
-              />
-            </div>
+            <input
+              id="signup-fullname"
+              type="text"
+              value={formData.fullName}
+              onChange={(e) => {
+                setError('');
+                setFormData(prev => ({ ...prev, fullName: e.target.value }));
+              }}
+              className="apple-input w-full"
+              placeholder="Enter your full name"
+              required
+            />
           </div>
 
           <div className="space-y-1.5">
             <label htmlFor="signup-email" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest">
               Email *
             </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
-              <input
-                id="signup-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => {
-                  setError('');
-                  setFormData(prev => ({ ...prev, email: e.target.value }));
-                }}
-                className="apple-input w-full pl-10"
-                placeholder="name@example.com"
-                required
-              />
-            </div>
+            <input
+              id="signup-email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => {
+                setError('');
+                setFormData(prev => ({ ...prev, email: e.target.value }));
+              }}
+              className="apple-input w-full"
+              placeholder="Enter your email address"
+              required
+            />
           </div>
 
           <div className="space-y-1.5">
             <label htmlFor="signup-password" className="block text-[10px] font-mono font-bold text-[var(--text-dim)] uppercase tracking-widest">
               Password *
             </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
-              <input
-                id="signup-password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => {
-                  setError('');
-                  setFormData(prev => ({ ...prev, password: e.target.value }));
-                }}
-                className="apple-input w-full pl-10"
-                placeholder="Min 6 characters"
-                required
-              />
-            </div>
+            <input
+              id="signup-password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => {
+                setError('');
+                setFormData(prev => ({ ...prev, password: e.target.value }));
+              }}
+              className="apple-input w-full"
+              placeholder="Enter your password (min 6 characters)"
+              required
+            />
           </div>
 
           <button

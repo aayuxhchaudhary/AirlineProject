@@ -17,18 +17,14 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     try {
       localStorage.setItem('airline_user', JSON.stringify(userData));
-    } catch {
-      // Ignore quota errors
-    }
+    } catch {}
   };
 
   const logoutUser = () => {
     setUser(null);
     try {
       localStorage.removeItem('airline_user');
-    } catch {
-      // Ignore
-    }
+    } catch {}
   };
 
   return (
