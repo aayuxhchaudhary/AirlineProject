@@ -42,10 +42,11 @@ export const FlightRow = ({ flight, onViewDetails, onEdit, onDelete }) => {
     : '0.00';
 
   return (
-    <div className="apple-card p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-200 border border-[var(--border-subtle)] hover:border-[var(--border-hover)] overflow-hidden">
+    <div className="apple-card p-4 sm:py-4.5 sm:px-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-200 border border-[var(--border-subtle)] hover:border-[var(--border-hover)]">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1 min-w-0">
-        <div className="sm:min-w-[130px]">
-          <div className="flex items-center space-x-2 mb-1 flex-wrap gap-y-1">
+        
+        <div className="w-full sm:w-44 md:w-48 shrink-0">
+          <div className="flex items-center space-x-2 mb-1">
             <span className="text-xs font-mono font-bold text-[var(--text-main)] bg-[var(--bg-pill)] px-2 py-0.5 rounded-lg border border-[var(--border-subtle)]">
               #{flight.flightNumber}
             </span>
@@ -53,46 +54,47 @@ export const FlightRow = ({ flight, onViewDetails, onEdit, onDelete }) => {
               {(flight.status || 'SCHEDULED').replace('_', ' ')}
             </span>
           </div>
-          <p className="text-sm font-semibold font-display text-[var(--text-main)] truncate max-w-[180px]">
+          <p className="text-sm font-semibold font-display text-[var(--text-main)] truncate" title={flight.airlineName}>
             {flight.airlineName}
           </p>
         </div>
 
-        <div className="flex flex-col flex-1 min-w-0 md:px-4">
-          <div className="flex items-center justify-between w-full gap-2">
-            <p className="text-base sm:text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%]">
-              {flight.source}
-            </p>
-
-            <div className="flex-1 px-1 sm:px-4 max-w-[120px]">
-              <div className="w-full flex items-center justify-center relative">
-                <div className="w-full border-t border-dashed border-[var(--border-hover)]"></div>
-                <AscendingPlaneIcon className="h-4 w-auto text-[var(--text-main)] absolute z-10 px-1 bg-[var(--bg-card-solid)] shrink-0" />
-              </div>
+        <div className="flex-1 min-w-0 md:px-6">
+          <div className="flex items-center justify-between gap-3">
+            
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-base sm:text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate">
+                {flight.source}
+              </p>
+              <p className="text-xs font-mono text-[var(--text-sub)] flex items-center gap-1.5 mt-0.5">
+                <Clock className="w-3 h-3 text-[var(--text-dim)] shrink-0" />
+                <span className="font-semibold text-[var(--text-main)]">{dep.time}</span>
+                <span className="text-[10px] text-[var(--text-dim)]">• {dep.date}</span>
+              </p>
             </div>
 
-            <p className="text-base sm:text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate max-w-[40%] text-right">
-              {flight.destination}
-            </p>
-          </div>
+            <div className="w-16 sm:w-24 shrink-0 flex items-center justify-center relative px-1">
+              <div className="w-full border-t border-dashed border-[var(--border-hover)]"></div>
+              <AscendingPlaneIcon className="h-4 w-auto text-[var(--text-main)] absolute z-10 px-1 bg-[var(--bg-card-solid)] shrink-0" />
+            </div>
 
-          <div className="flex items-center justify-between mt-0.5 w-full">
-            <p className="text-xs font-mono text-[var(--text-sub)] flex items-center gap-1">
-              <Clock className="w-3 h-3 text-[var(--text-dim)] shrink-0" />
-              <span>{dep.time}</span>
-              <span className="text-[10px] text-[var(--text-dim)] hidden xl:inline">({dep.date})</span>
-            </p>
-            <p className="text-xs font-mono text-[var(--text-sub)] flex items-center gap-1">
-              <span className="text-[10px] text-[var(--text-dim)] hidden xl:inline">({arr.date})</span>
-              <span>{arr.time}</span>
-              <Clock className="w-3 h-3 text-[var(--text-dim)] shrink-0" />
-            </p>
+            <div className="flex-1 min-w-0 text-right">
+              <p className="text-base sm:text-lg font-bold font-display tracking-tight text-[var(--text-main)] truncate">
+                {flight.destination}
+              </p>
+              <p className="text-xs font-mono text-[var(--text-sub)] flex items-center justify-end gap-1.5 mt-0.5">
+                <span className="text-[10px] text-[var(--text-dim)]">{arr.date} •</span>
+                <span className="font-semibold text-[var(--text-main)]">{arr.time}</span>
+                <Clock className="w-3 h-3 text-[var(--text-dim)] shrink-0" />
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between md:justify-end flex-wrap sm:flex-nowrap gap-3 sm:gap-4 pt-3 md:pt-0 border-t md:border-t-0 border-[var(--border-subtle)]">
-        <div className="flex-1 sm:flex-initial sm:min-w-[100px]">
+      <div className="flex items-center justify-between md:justify-end gap-4 sm:gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-[var(--border-subtle)] shrink-0">
+        
+        <div className="w-28 sm:w-32 shrink-0">
           <div className="flex items-center justify-between text-xs text-[var(--text-sub)] mb-1">
             <span className="text-[10px] font-mono text-[var(--text-dim)] uppercase">Seats</span>
             <span className="font-mono text-xs font-bold text-[var(--text-main)]">
@@ -107,15 +109,15 @@ export const FlightRow = ({ flight, onViewDetails, onEdit, onDelete }) => {
           </div>
         </div>
 
-        <div className="text-right sm:min-w-[90px]">
+        <div className="w-24 sm:w-28 text-right shrink-0">
           <span className="text-[9px] font-mono text-[var(--text-dim)] block uppercase tracking-wider">Fare</span>
           <span className="text-base sm:text-lg font-bold font-display text-[var(--text-main)]">₹{formattedPrice}</span>
         </div>
 
-        <div className="flex items-center space-x-1.5 sm:space-x-2 sm:pl-3 sm:ml-2 sm:border-l sm:border-[var(--border-subtle)] shrink-0">
+        <div className="flex items-center space-x-1.5 sm:pl-3 sm:border-l sm:border-[var(--border-subtle)] shrink-0">
           <button
             onClick={(e) => { e.stopPropagation(); onViewDetails(flight); }}
-            className="apple-btn-secondary px-3 py-1.5 text-xs"
+            className="apple-btn-secondary px-3.5 py-1.5 text-xs font-semibold"
           >
             Details
           </button>
@@ -124,14 +126,14 @@ export const FlightRow = ({ flight, onViewDetails, onEdit, onDelete }) => {
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); onEdit(flight); }}
-                className="apple-btn-icon"
+                className="apple-btn-icon p-1.5 rounded-lg border border-[var(--border-subtle)] hover:border-[var(--border-hover)]"
                 aria-label="Edit flight"
               >
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onDelete(flight); }}
-                className="apple-btn-icon hover:!bg-red-500/10 hover:!text-red-500 hover:!border-red-500/30"
+                className="apple-btn-icon p-1.5 rounded-lg border border-[var(--border-subtle)] hover:!border-red-500/30 hover:!bg-red-500/10 hover:!text-red-500 text-[var(--status-danger)]"
                 aria-label="Delete flight"
               >
                 <Trash2 className="w-3.5 h-3.5" />

@@ -14,8 +14,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.regex.Pattern;
+
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -43,6 +47,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
+        if (loginRequest.getEmail() == null || !EMAIL_PATTERN.matcher(loginRequest.getEmail().trim()).matches()) {
+            throw new BadRequestException("Invalid email format.");
+        }
+
         String identifier = normalizeEmail(loginRequest.getEmail());
 
         User user = userRepository.findByEmailIgnoreCase(identifier)
@@ -57,6 +65,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse signup(SignupRequest signupRequest) {
+        if (signupRequest.getFullName() == null || signupRequest.getFullName().trim().length() < 2) {
+            throw new BadRequestException("Full name must be at least 2 characters.");
+        }
+        if (signupRequest.getEmail() == null || !EMAIL_PATTERN.matcher(signupRequest.getEmail().trim()).matches()) {
+            throw new BadRequestException("Invalid email format.");
+        }
+        if (signupRequest.getPassword() == null || signupRequest.getPassword().length() < 6) {
+            throw new BadRequestException("Password must be at least 6 characters.");
+        }
+
         String email = normalizeEmail(signupRequest.getEmail());
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new BadRequestException("Email is already registered.");

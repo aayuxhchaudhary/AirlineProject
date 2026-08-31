@@ -14,6 +14,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -37,6 +40,36 @@ public class FlightServiceImpl implements FlightService {
                 : Sort.by(field).descending();
     }
 
+    private void validateFlightData(Flight flight, boolean isNew) {
+        if (flight.getSource() != null && flight.getDestination() != null &&
+            flight.getSource().trim().equalsIgnoreCase(flight.getDestination().trim())) {
+            throw new BadRequestException("Source and Destination cities cannot be identical.");
+        }
+
+        if (flight.getDepartureTime() != null && flight.getArrivalTime() != null) {
+            if (!flight.getArrivalTime().isAfter(flight.getDepartureTime())) {
+                throw new BadRequestException("Arrival time must be after departure time.");
+            }
+            if (isNew && flight.getDepartureTime().isBefore(LocalDateTime.now().minusMinutes(5))) {
+                throw new BadRequestException("Departure time cannot be in the past.");
+            }
+        }
+
+        if (flight.getTotalSeats() != null && flight.getAvailableSeats() != null) {
+            if (flight.getAvailableSeats() > flight.getTotalSeats()) {
+                throw new BadRequestException("Available seats (" + flight.getAvailableSeats() + 
+                    ") cannot exceed total capacity (" + flight.getTotalSeats() + ").");
+            }
+            if (flight.getAvailableSeats() < 0) {
+                throw new BadRequestException("Available seats cannot be negative.");
+            }
+        }
+
+        if (flight.getTicketPrice() != null && flight.getTicketPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Ticket price must be strictly greater than 0.");
+        }
+    }
+
     @Override
     public Page<Flight> getAllFlights(int page, int size, String sortBy, String direction, FlightStatus status) {
         Pageable pageable = PageRequest.of(page, size, buildSort(sortBy, direction));
@@ -55,6 +88,7 @@ public class FlightServiceImpl implements FlightService {
     @Override
     @Transactional
     public Flight createFlight(Flight flight) {
+        validateFlightData(flight, true);
         if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
             throw new BadRequestException("Flight number '" + flight.getFlightNumber() + "' already exists.");
         }
@@ -64,6 +98,7 @@ public class FlightServiceImpl implements FlightService {
     @Override
     @Transactional
     public Flight updateFlight(Long id, Flight flightDetails) {
+        validateFlightData(flightDetails, false);
         Flight flight = flightRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
 
@@ -104,7 +139,7 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public java.util.List<String> getDistinctCities() {
+    public List<String> getDistinctCities() {
         return flightRepository.findDistinctCities();
     }
 }

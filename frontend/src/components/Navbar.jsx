@@ -19,10 +19,10 @@ export const Navbar = ({ onOpenCreateModal, onOpenLoginModal, onOpenSignupModal 
           </span>
         </Link>
 
-        <div className="flex items-center space-x-1.5 sm:space-x-3">
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
           <button
             onClick={toggleTheme}
-            className="apple-btn-icon"
+            className="apple-btn-icon p-2 rounded-xl border border-[var(--border-subtle)] hover:border-[var(--border-hover)]"
             aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
           >
             {theme === 'dark' ? (
@@ -32,16 +32,22 @@ export const Navbar = ({ onOpenCreateModal, onOpenLoginModal, onOpenSignupModal 
             )}
           </button>
 
+          <div className="h-5 w-px bg-[var(--border-subtle)] mx-0.5 hidden sm:block"></div>
+
           {user ? (
-            <div className="flex items-center space-x-3 sm:space-x-4">
-              <span className="text-xs sm:text-sm font-semibold hidden md:inline mr-2">Hello, {user.fullName?.split(' ')[0] ?? user.email}</span>
-              
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="hidden md:flex items-center px-3.5 py-1.5 rounded-full bg-[var(--bg-pill)] border border-[var(--border-subtle)]">
+                <span className="text-xs font-semibold text-[var(--text-sub)]">
+                  Hello, <strong className="text-[var(--text-main)]">{user.fullName?.split(' ')[0] ?? user.email}</strong>
+                </span>
+              </div>
+
               {isAdmin && (
                 <button
                   onClick={onOpenCreateModal}
-                  className="apple-btn-primary py-1.5 px-3 sm:py-2 sm:px-4 text-xs flex items-center space-x-1"
+                  className="apple-btn-primary py-2 px-4 text-xs flex items-center gap-1.5 shadow-sm"
                 >
-                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Add Flight</span>
                 </button>
               )}
@@ -51,23 +57,24 @@ export const Navbar = ({ onOpenCreateModal, onOpenLoginModal, onOpenSignupModal 
                   logoutUser();
                   navigate('/');
                 }}
-                className="apple-btn-icon"
+                className="apple-btn-icon p-2 rounded-xl border border-[var(--border-subtle)] hover:border-[var(--border-hover)]"
                 aria-label="Logout"
+                title="Logout"
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center space-x-1.5 sm:space-x-2">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={onOpenLoginModal}
-                className="apple-btn-secondary py-1.5 px-3 sm:py-2 sm:px-4 text-xs"
+                className="apple-btn-secondary py-2 px-4 text-xs font-semibold"
               >
                 Login
               </button>
               <button
                 onClick={onOpenSignupModal}
-                className="apple-btn-primary py-1.5 px-3 sm:py-2 sm:px-4 text-xs"
+                className="apple-btn-primary py-2 px-4 text-xs font-semibold shadow-sm"
               >
                 Sign Up
               </button>
