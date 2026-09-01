@@ -19,7 +19,7 @@ const loadCities = async () => {
       .then(res => res.ok ? res.json() : [])
       .then(data => {
         const set = new Set([...(Array.isArray(data) ? data : []), ...FALLBACK_CITIES]);
-        cachedCities = Array.from(set).sort((a, b) => a.localeCompare(b));
+        cachedCities = Array.from(set);
         return cachedCities;
       })
       .catch(() => {
@@ -47,25 +47,9 @@ export const CityAutocomplete = ({ value = '', onChange, name, id, className = '
   const filteredCities = useMemo(() => {
     const q = (value || '').trim().toLowerCase();
     if (!q) return availableCities.slice(0, 10);
-
-    const prefixMatches = [];
-    const wordMatches = [];
-    const substringMatches = [];
-
-    for (let i = 0; i < availableCities.length; i++) {
-      const city = availableCities[i];
-      const lower = city.toLowerCase();
-
-      if (lower.startsWith(q)) {
-        prefixMatches.push(city);
-      } else if (lower.includes(' ' + q) || lower.includes('-' + q)) {
-        wordMatches.push(city);
-      } else if (lower.includes(q)) {
-        substringMatches.push(city);
-      }
-    }
-
-    return [...prefixMatches, ...wordMatches, ...substringMatches].slice(0, 10);
+    return availableCities
+      .filter(city => city.toLowerCase().includes(q))
+      .slice(0, 10);
   }, [availableCities, value]);
 
   useEffect(() => {

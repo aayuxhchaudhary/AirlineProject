@@ -73,7 +73,7 @@ public class Flight {
 
     @NotNull(message = "Flight status is required")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 30, columnDefinition = "VARCHAR(30)")
     private FlightStatus status;
 
     @Column(name = "is_deleted", nullable = false)

@@ -1,15 +1,17 @@
 package com.airline.controller;
 
+import com.airline.dto.ApiResponse;
 import com.airline.entity.Flight;
 import com.airline.entity.enums.FlightStatus;
 import com.airline.service.FlightService;
+import com.airline.service.MessageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/flights")
@@ -17,10 +19,12 @@ import java.util.Map;
 public class FlightController {
 
     private final FlightService flightService;
+    private final MessageService msg;
 
     @Autowired
-    public FlightController(FlightService flightService) {
+    public FlightController(FlightService flightService, MessageService messageService) {
         this.flightService = flightService;
+        this.msg = messageService;
     }
 
     @GetMapping
@@ -49,9 +53,9 @@ public class FlightController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteFlight(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> deleteFlight(@PathVariable Long id) {
         flightService.deleteFlight(id);
-        return ResponseEntity.ok(Map.of("deleted", Boolean.TRUE));
+        return ResponseEntity.ok(new ApiResponse(true, msg.get("app.messages.flight.delete-success")));
     }
 
     @GetMapping("/search")
@@ -67,7 +71,7 @@ public class FlightController {
     }
 
     @GetMapping("/cities")
-    public ResponseEntity<java.util.List<String>> getDistinctCities() {
+    public ResponseEntity<List<String>> getDistinctCities() {
         return ResponseEntity.ok(flightService.getDistinctCities());
     }
 }

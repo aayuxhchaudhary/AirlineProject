@@ -6,6 +6,7 @@ import com.airline.exception.BadRequestException;
 import com.airline.exception.ResourceNotFoundException;
 import com.airline.repository.FlightRepository;
 import com.airline.service.FlightService;
+import com.airline.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,10 +28,12 @@ public class FlightServiceImpl implements FlightService {
     );
 
     private final FlightRepository flightRepository;
+    private final MessageService msg;
 
     @Autowired
-    public FlightServiceImpl(FlightRepository flightRepository) {
+    public FlightServiceImpl(FlightRepository flightRepository, MessageService messageService) {
         this.flightRepository = flightRepository;
+        this.msg = messageService;
     }
 
     private Sort buildSort(String sortBy, String direction) {
@@ -40,57 +43,53 @@ public class FlightServiceImpl implements FlightService {
                 : Sort.by(field).descending();
     }
 
-    private void validateFlightData(Flight flight, boolean isNew) {
+    private void validateFlight(Flight flight, boolean isNew) {
         if (flight.getSource() != null && flight.getDestination() != null &&
             flight.getSource().trim().equalsIgnoreCase(flight.getDestination().trim())) {
-            throw new BadRequestException("Source and Destination cities cannot be identical.");
+            throw new BadRequestException(msg.get("app.messages.flight.identical-cities"));
         }
-
         if (flight.getDepartureTime() != null && flight.getArrivalTime() != null) {
             if (!flight.getArrivalTime().isAfter(flight.getDepartureTime())) {
-                throw new BadRequestException("Arrival time must be after departure time.");
+                throw new BadRequestException(msg.get("app.messages.flight.invalid-arrival"));
             }
             if (isNew && flight.getDepartureTime().isBefore(LocalDateTime.now().minusMinutes(5))) {
-                throw new BadRequestException("Departure time cannot be in the past.");
+                throw new BadRequestException(msg.get("app.messages.flight.past-departure"));
             }
         }
-
         if (flight.getTotalSeats() != null && flight.getAvailableSeats() != null) {
             if (flight.getAvailableSeats() > flight.getTotalSeats()) {
-                throw new BadRequestException("Available seats (" + flight.getAvailableSeats() + 
-                    ") cannot exceed total capacity (" + flight.getTotalSeats() + ").");
+                throw new BadRequestException(msg.get("app.messages.flight.excess-seats"));
             }
             if (flight.getAvailableSeats() < 0) {
-                throw new BadRequestException("Available seats cannot be negative.");
+                throw new BadRequestException(msg.get("app.messages.flight.negative-seats"));
             }
         }
-
         if (flight.getTicketPrice() != null && flight.getTicketPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BadRequestException("Ticket price must be strictly greater than 0.");
+            throw new BadRequestException(msg.get("app.messages.flight.invalid-price"));
         }
     }
 
     @Override
     public Page<Flight> getAllFlights(int page, int size, String sortBy, String direction, FlightStatus status) {
+        if (page < 0) throw new BadRequestException(msg.get("app.messages.flight.invalid-page"));
+        if (size <= 0 || size > 100) throw new BadRequestException(msg.get("app.messages.flight.invalid-size"));
         Pageable pageable = PageRequest.of(page, size, buildSort(sortBy, direction));
-        if (status != null) {
-            return flightRepository.findByStatus(status, pageable);
-        }
-        return flightRepository.findAll(pageable);
+        return flightRepository.findAllWithFilters(status, pageable);
     }
 
     @Override
     public Flight getFlightById(Long id) {
+        if (id == null || id <= 0) throw new BadRequestException(msg.get("app.messages.flight.invalid-id"));
         return flightRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(msg.get("app.messages.flight.not-found", id)));
     }
 
     @Override
     @Transactional
     public Flight createFlight(Flight flight) {
-        validateFlightData(flight, true);
+        validateFlight(flight, true);
         if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
-            throw new BadRequestException("Flight number '" + flight.getFlightNumber() + "' already exists.");
+            throw new BadRequestException(msg.get("app.messages.flight.duplicate-number", flight.getFlightNumber()));
         }
         return flightRepository.save(flight);
     }
@@ -98,12 +97,13 @@ public class FlightServiceImpl implements FlightService {
     @Override
     @Transactional
     public Flight updateFlight(Long id, Flight flightDetails) {
-        validateFlightData(flightDetails, false);
+        if (id == null || id <= 0) throw new BadRequestException(msg.get("app.messages.flight.invalid-id"));
+        validateFlight(flightDetails, false);
         Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(msg.get("app.messages.flight.not-found", id)));
 
         if (flightRepository.existsByFlightNumberAndIdNot(flightDetails.getFlightNumber(), id)) {
-            throw new BadRequestException("Flight number '" + flightDetails.getFlightNumber() + "' is already in use by another flight.");
+            throw new BadRequestException(msg.get("app.messages.flight.number-in-use", flightDetails.getFlightNumber()));
         }
 
         flight.setFlightNumber(flightDetails.getFlightNumber());
@@ -123,19 +123,19 @@ public class FlightServiceImpl implements FlightService {
     @Override
     @Transactional
     public void deleteFlight(Long id) {
+        if (id == null || id <= 0) throw new BadRequestException(msg.get("app.messages.flight.invalid-id"));
         Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(msg.get("app.messages.flight.not-found", id)));
         flight.setDeleted(true);
         flightRepository.save(flight);
     }
 
     @Override
     public Page<Flight> searchFlights(String source, String destination, int page, int size, String sortBy, String direction, FlightStatus status) {
+        if (page < 0) throw new BadRequestException(msg.get("app.messages.flight.invalid-page"));
+        if (size <= 0 || size > 100) throw new BadRequestException(msg.get("app.messages.flight.invalid-size"));
         Pageable pageable = PageRequest.of(page, size, buildSort(sortBy, direction));
-        if (status != null) {
-            return flightRepository.findBySourceContainingIgnoreCaseAndDestinationContainingIgnoreCaseAndStatus(source, destination, status, pageable);
-        }
-        return flightRepository.findBySourceContainingIgnoreCaseAndDestinationContainingIgnoreCase(source, destination, pageable);
+        return flightRepository.searchWithFilters(source, destination, status, pageable);
     }
 
     @Override

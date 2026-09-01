@@ -8,11 +8,10 @@ import com.airline.entity.enums.Role;
 import com.airline.exception.BadRequestException;
 import com.airline.repository.UserRepository;
 import com.airline.service.AuthService;
+import com.airline.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.regex.Pattern;
 
@@ -22,11 +21,13 @@ public class AuthServiceImpl implements AuthService {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     private final UserRepository userRepository;
+    private final MessageService msg;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository) {
+    public AuthServiceImpl(UserRepository userRepository, MessageService messageService) {
         this.userRepository = userRepository;
+        this.msg = messageService;
     }
 
     private String normalizeEmail(String email) {
@@ -48,36 +49,38 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
         if (loginRequest.getEmail() == null || !EMAIL_PATTERN.matcher(loginRequest.getEmail().trim()).matches()) {
-            throw new BadRequestException("Invalid email format.");
+            throw new BadRequestException(msg.get("app.messages.auth.invalid-email"));
+        }
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().isEmpty()) {
+            throw new BadRequestException(msg.get("app.messages.auth.empty-password"));
         }
 
         String identifier = normalizeEmail(loginRequest.getEmail());
-
         User user = userRepository.findByEmailIgnoreCase(identifier)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password."));
+                .orElseThrow(() -> new BadRequestException(msg.get("app.messages.auth.invalid-credentials")));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password.");
+            throw new BadRequestException(msg.get("app.messages.auth.invalid-credentials"));
         }
 
-        return new AuthResponse(user.getId(), user.getEmail(), user.getFullName(), user.getRole(), "Login successful");
+        return new AuthResponse(user.getId(), user.getEmail(), user.getFullName(), user.getRole(), msg.get("app.messages.auth.login-success"));
     }
 
     @Override
     public AuthResponse signup(SignupRequest signupRequest) {
         if (signupRequest.getFullName() == null || signupRequest.getFullName().trim().length() < 2) {
-            throw new BadRequestException("Full name must be at least 2 characters.");
+            throw new BadRequestException(msg.get("app.messages.auth.short-name"));
         }
         if (signupRequest.getEmail() == null || !EMAIL_PATTERN.matcher(signupRequest.getEmail().trim()).matches()) {
-            throw new BadRequestException("Invalid email format.");
+            throw new BadRequestException(msg.get("app.messages.auth.invalid-email"));
         }
         if (signupRequest.getPassword() == null || signupRequest.getPassword().length() < 6) {
-            throw new BadRequestException("Password must be at least 6 characters.");
+            throw new BadRequestException(msg.get("app.messages.auth.short-password"));
         }
 
         String email = normalizeEmail(signupRequest.getEmail());
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new BadRequestException("Email is already registered.");
+            throw new BadRequestException(msg.get("app.messages.auth.email-registered"));
         }
 
         User newUser = new User();
@@ -87,6 +90,6 @@ public class AuthServiceImpl implements AuthService {
         newUser.setRole(Role.USER);
 
         User savedUser = userRepository.save(newUser);
-        return new AuthResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getFullName(), savedUser.getRole(), "Signup successful");
+        return new AuthResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getFullName(), savedUser.getRole(), msg.get("app.messages.auth.signup-success"));
     }
 }
